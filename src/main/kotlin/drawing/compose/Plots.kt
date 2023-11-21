@@ -5,7 +5,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
@@ -25,24 +25,30 @@ import kotlin.reflect.KFunction1
 
 
 @Composable
-fun showPlot(functions: List<Triple<(Double) -> Double?, Map<Double,Double>?, Color>>, xMin:Double, xMax:Double, yMin:Double, yMax:Double,){
+fun showPlot(
+    functions: List<Triple<(Double) -> Double?, Map<Double,Double>?, Pair<Color,String>>>,
+    xMin: Double,
+    xMax: Double,
+    yMin: Double,
+    yMax: Double,
+) {
 
     val cartesianPainter = CartesianPainter(showGrid = true)
     cartesianPainter.plane = Plane(xMin, xMax, yMin, yMax,0f,0f)
 
+    fun generatePainters(functions: List<Triple<(Double) -> Double?, Map<Double,Double>?, Pair<Color,String>>>): List<Triple<FunctionPainter, PointsPainter?, Pair<Boolean,String>>> {
+        return functions.map { (function, points, colorName) ->
+            val funkPainter = FunctionPainter(function, colorName.first)
+            funkPainter.plane = cartesianPainter.plane
 
-    val painters: MutableList<Triple<FunctionPainter, PointsPainter?, Boolean>> = mutableListOf()
-
-    functions.forEach { (function, points, color) ->
-        val funkPainter = FunctionPainter(function, color)
-        funkPainter.plane = cartesianPainter.plane
-
-        val pointsPainter = points?.let {
-            PointsPainter(it, darkenColor(color, 0.5), 2f)
+            val pointsPainter = points?.let {
+                PointsPainter(it, darkenColor(colorName.first, 0.5), 2f)
+            }
+            Triple(funkPainter, pointsPainter, true to colorName.second)
         }
-
-        painters.add(Triple(funkPainter, pointsPainter, true))
     }
+
+    var painters by remember { mutableStateOf(generatePainters(functions)) }
 
     MaterialTheme {
         Box(Modifier.background(Color.Blue).fillMaxSize()) {
@@ -51,7 +57,7 @@ fun showPlot(functions: List<Triple<(Double) -> Double?, Map<Double,Double>?, Co
                 verticalArrangement = Arrangement.Bottom
             ) {
                 Canvas(
-                Modifier
+                    Modifier
                         .border(2.dp, MaterialTheme.colors.primary)
                         .fillMaxSize()
                         .weight(1f)
@@ -62,31 +68,43 @@ fun showPlot(functions: List<Triple<(Double) -> Double?, Map<Double,Double>?, Co
                     cartesianPainter.plane?.height = size.height
                     cartesianPainter.paint(this)
 
-                    painters.forEach{ (funkPainter,pointsPainter,bool,) ->
+                    painters.forEach { (funkPainter, pointsPainter, boolName) ->
                         funkPainter.plane?.width = size.width
                         funkPainter.plane?.height = size.height
-                        funkPainter.paint(this)
-                        pointsPainter?.let {
-                            pointsPainter.plane?.width = size.width
-                            pointsPainter.plane?.height = size.height
-                            pointsPainter.paint(this)
+                        if (boolName.first) {
+                            funkPainter.paint(this)
+                            pointsPainter?.let {
+                                pointsPainter.plane?.width = size.width
+                                pointsPainter.plane?.height = size.height
+                                pointsPainter.paint(this)
+                            }
                         }
                     }
                 }
-                Column(Modifier.padding(top = 2.dp).fillMaxWidth()
-                    .background(Color(1f, 1f, 1f, 0.9f))
+                Column(
+                    Modifier.padding(top = 2.dp).fillMaxWidth()
+                        .background(Color(1f, 1f, 1f, 0.9f))
                 ) {
-                    Row(Modifier.fillMaxWidth().padding(4.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Row(
+                        Modifier.fillMaxWidth().padding(4.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
                         Row {
-                            painters.forEachIndexed { index, (functionPainter, pointsPainter, bool) ->
+                            painters.forEachIndexed { index, (functionPainter, pointsPainter, boolName) ->
                                 Switch(
-                                    checked = bool,
-                                    onCheckedChange = { bool = it },
+                                    checked = boolName.first,
+                                    onCheckedChange = {
+                                        painters = painters.toMutableList().apply {
+                                            this[index] = Triple(functionPainter, pointsPainter, it to boolName.second)
+                                        }
+                                    },
                                     modifier = Modifier.padding(2.dp),
-                                    colors = SwitchDefaults.colors(checkedThumbColor = MaterialTheme.colors.primary)
+                                    colors = SwitchDefaults.colors(
+                                        checkedThumbColor = functionPainter.color
+                                    )
                                 )
                                 Text(
-                                    text = "Точки $index",
+                                    text = boolName.second,
                                     modifier = Modifier.padding(2.dp)
                                 )
                             }
@@ -97,4 +115,6 @@ fun showPlot(functions: List<Triple<(Double) -> Double?, Map<Double,Double>?, Co
         }
     }
 }
+
+
 

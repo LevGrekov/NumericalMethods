@@ -26,4 +26,5 @@ abstract class InterpolationSpline(points: Map<Double, Double>) {
         }
         else append("NULL")
     }
+
 }

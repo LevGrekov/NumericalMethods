@@ -1,6 +1,6 @@
 object SystemSolver {
     @OptIn(ExperimentalStdlibApi::class)
-    fun CramerMethod(coefficients: Array<DoubleArray>, constants: DoubleArray): DoubleArray {
+    fun cramerMethod(coefficients: Array<DoubleArray>, constants: DoubleArray): DoubleArray {
         val n = constants.size
         val solution = DoubleArray(n)
 
@@ -50,7 +50,7 @@ object SystemSolver {
         return determinant
     }
 
-    fun GaussMethod(coefficients: Array<DoubleArray>, constants: DoubleArray): DoubleArray? {
+    fun gaussMethod(coefficients: Array<DoubleArray>, constants: DoubleArray): DoubleArray? {
         val n = constants.size
 
         // Прямой ход метода Гаусса с выбором главного элемента

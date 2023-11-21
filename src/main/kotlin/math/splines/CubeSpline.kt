@@ -66,7 +66,7 @@ class CubeSpline (points: Map<Double, Double>) : InterpolationSpline(points) {
         constants[n*4-1] = 0.0
         constants[n*4-1] = 0.0
 
-         return SystemSolver.GaussMethod(matrix,constants)
+         return SystemSolver.gaussMethod(matrix,constants)
     }
 
     private fun insertVector(originalVector: DoubleArray, insertVector: DoubleArray, position: Int): DoubleArray {
