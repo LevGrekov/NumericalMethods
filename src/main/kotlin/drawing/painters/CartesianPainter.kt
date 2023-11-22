@@ -62,14 +62,14 @@ open class CartesianPainter(val showGrid: Boolean) : Painter {
             while (x < it.xMax){
                 if(x neq 0.0){
                     paintXLabels(scope,x)
-                    x+=stepX
                 }
+                x+=stepX
             }
             while (y < it.yMax){
                 if(y neq 0.0){
                     paintYLabels(scope,y)
-                    y+=stepY
                 }
+                y+=stepY
             }
         }
     }
@@ -154,7 +154,7 @@ open class CartesianPainter(val showGrid: Boolean) : Painter {
                 )
                 plane?.let { plane ->
                     var y = Converter.yCrt2Scr(0.0, plane).coerceIn(0f, plane.height)
-                    if(y==plane.height) y -= 34f else y += 17f
+                    if(y==plane.height) y -= 34f  else y += 17f
 
                     val x = Converter.xCrt2Scr(value, plane) - text.size.width / 2
                     drawText(text, topLeft = Offset(x, y))

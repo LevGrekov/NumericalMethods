@@ -29,7 +29,7 @@ import kotlin.reflect.KFunction1
 @OptIn(ExperimentalTextApi::class)
 @Composable
 fun showPlot(
-    functions: List<Triple<(Double) -> Double?, Map<Double,Double>?, Pair<Color,String>>>,
+    functions: List<Triple<(Double) -> Double?, Map<Double,Double>?, Triple<Color,String,Boolean>>>,
     xMin: Double,
     xMax: Double,
     yMin: Double,
@@ -39,22 +39,22 @@ fun showPlot(
     val cartesianPainter = CartesianPainter(showGrid = true)
     cartesianPainter.plane = Plane(xMin, xMax, yMin, yMax,0f,0f)
 
-    fun generatePainters(functions: List<Triple<(Double) -> Double?, Map<Double,Double>?, Pair<Color,String>>>): List<Triple<FunctionPainter, PointsPainter, Pair<Boolean,String>>> {
-        return functions.map { (function, points, colorNamePair) ->
-            val funkPainter = FunctionPainter(function, colorNamePair.first)
+    fun generatePainters(functions: List<Triple<(Double) -> Double?, Map<Double,Double>?, Triple<Color,String,Boolean>>>):
+            List<Triple<FunctionPainter, PointsPainter, Pair<Boolean,String>>> =
+        functions.map { (function, points, colorNameBoolTuple) ->
+            val funkPainter = FunctionPainter(function, colorNameBoolTuple.first)
             funkPainter.plane = cartesianPainter.plane
 
             val pointsPainter = if(points == null){
-                PointsPainter(mapOf(), colorNamePair.first, 2f)
+                PointsPainter(mapOf(), colorNameBoolTuple.first, 2f)
             }
             else{
-                PointsPainter(points, colorNamePair.first, 2f)
+                PointsPainter(points, colorNameBoolTuple.first, 2f)
             }
             pointsPainter.plane = cartesianPainter.plane
 
-            Triple(funkPainter, pointsPainter, true to colorNamePair.second)
+            Triple(funkPainter, pointsPainter, colorNameBoolTuple.third to colorNameBoolTuple.second)
         }
-    }
 
     var painters by remember { mutableStateOf(generatePainters(functions)) }
 

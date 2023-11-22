@@ -3,6 +3,7 @@ package TestsSolvers
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import drawing.compose.showPlot
+import math.polynomials.NewtonPolynomial
 import math.splines.CubeSpline
 import math.splines.LinearSpline
 import kotlin.math.PI
@@ -54,32 +55,44 @@ object SecondTestSolver {
 
         val fx2: (Double, Double, Int) -> Double = {a,b,k -> (b-a)/2 * cos(((2*k - 1)* PI)/10) + (b+a)/2}
         val secondPoints = getPoints(fx2, fy, lowLim, upLim, 1, 5)
-        val functionTuples: MutableList<Triple<(Double) -> Double?, Map<Double, Double>?,Pair<Color,String>>> = mutableListOf()
+        val functionTuples: MutableList<Triple<(Double) -> Double?, Map<Double, Double>?,Triple<Color,String,Boolean>>> = mutableListOf()
 
-        functionTuples.add(Triple(fy,null,Color(66, 170, 255) to "f(x)"))
+        functionTuples.add(Triple(fy,null,Triple(Color(66, 170, 255,),"f(x)",true)))
 
         val ls1 = LinearSpline(firstPoints).also {
             print("Первый Линенйный Сплайн\n$it")
             checkError(controlPoints,fy,it::invoke)
-            functionTuples.add(Triple(it::invoke, firstPoints,Color(229,43,80) to "S₁(x)"))
+            functionTuples.add(Triple(it::invoke, firstPoints,Triple(Color(229,43,80), "S₁(x)",true)))
         }
 
         val ls2 = LinearSpline(secondPoints).also {
             print("Второй Линенйный Сплайн\n$it")
             checkError(controlPoints,fy,it::invoke)
-            functionTuples.add(Triple(it::invoke, secondPoints,Color(68,148,74) to "S₂(x)"))
+            functionTuples.add(Triple(it::invoke, secondPoints, Triple(Color(68,148,74),"S₂(x)",true)))
         }
 
         val cs1 = CubeSpline(firstPoints).also {
             print("Первый Кубический Сплайн\n$it")
             checkError(controlPoints,fy,it::invoke)
-            functionTuples.add(Triple(it::invoke, firstPoints,Color(255,176,46) to "S₁³(x)"))
+            functionTuples.add(Triple(it::invoke, firstPoints,Triple(Color(255,176,46), "S₁³(x)",true)))
         }
 
         val cs2 = CubeSpline(secondPoints).also {
             print("Второй Кубический Сплайн\n$it")
             checkError(controlPoints,fy,it::invoke)
-            functionTuples.add(Triple(it::invoke, secondPoints,Color(189,	51,	164) to "S₂³(x)"))
+            functionTuples.add(Triple(it::invoke, secondPoints, Triple(Color(189,	51,	164),"S₂³(x)",true)))
+        }
+
+        val L1 = NewtonPolynomial(firstPoints).also {
+            print("Первый Полином Лагранжа\n$it")
+            checkError(controlPoints,fy,it::invoke)
+            functionTuples.add(Triple(it::invoke, firstPoints, Triple(Color(255,79,	0),"L₁(x)",false)))
+        }
+
+        val L2 = NewtonPolynomial(secondPoints).also {
+            print("Второй Полином Лагранжа\n$it")
+            checkError(controlPoints,fy,it::invoke)
+            functionTuples.add(Triple(it::invoke, secondPoints,Triple(Color(0	,71	,171),"L₂(x)",false)))
         }
 
         var xMin = (firstPoints + secondPoints).keys.min()
