@@ -2,6 +2,7 @@ package math
 
 import kotlin.math.abs
 import kotlin.math.max
+import kotlin.math.min
 import kotlin.math.ulp
 
 fun Double.eq(other: Double, eps: Double) = abs(this - other) < eps
@@ -25,3 +26,27 @@ fun calculateDerivativeAtPoint(
     x: Double,
     h: Double = 1e-5): Double
         = (f(x + h) - f(x - h)) / (2 * h)
+fun findMaxError(lowLim: Double, upLim: Double,f: (Double) -> Double?, g: (Double) -> Double?,epsilon: Double = 10e-6): Double {
+    val a = min(lowLim,upLim)
+    val b = max(lowLim,upLim)
+    var x = a
+
+    var maxError = Double.MIN_VALUE
+
+    while (x <= b) {
+        var fvalue = f(x)
+        var gvalue = g(x)
+
+        if(fvalue!= null && gvalue != null){
+            val error = abs(fvalue - gvalue)
+
+            if (error > maxError) {
+                maxError = error
+            }
+        }
+
+        x += epsilon
+    }
+
+    return maxError
+}
