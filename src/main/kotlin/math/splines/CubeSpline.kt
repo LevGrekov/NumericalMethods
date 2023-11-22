@@ -2,16 +2,22 @@ package math.splines
 
 import SystemSolver
 import math.polynomials.Polynomial
+import java.util.*
 import kotlin.math.pow
 
-class CubeSpline (points: Map<Double, Double>) : InterpolationSpline(points) {
-
-    override val segments: List<SplineSegment> = buildSegments()
-
+class CubeSpline (pts: Map<Double, Double>) : SegmentedFunction() {
+    val points: Map<Double, Double> = TreeMap(pts)
+    init {
+        segments.apply {
+            clear()
+            addAll(buildSegments())
+        }
+    }
     private fun buildSegments(): List<SplineSegment> {
         val coefficients = getCoefficients()
         val segments = mutableListOf<SplineSegment>()
         val iterator = points.iterator()
+
 
         coefficients?.let {
             if (iterator.hasNext()) {
@@ -36,7 +42,9 @@ class CubeSpline (points: Map<Double, Double>) : InterpolationSpline(points) {
         }
         return segments
     }
+
     private fun getCoefficients(): DoubleArray?{
+        val n = points.size - 1
         val x = this.points.keys.toList()
         val y = this.points.values.toList()
         val matrixSize = n * 4
@@ -68,7 +76,6 @@ class CubeSpline (points: Map<Double, Double>) : InterpolationSpline(points) {
 
          return SystemSolver.gaussMethod(matrix,constants)
     }
-
     private fun insertVector(originalVector: DoubleArray, insertVector: DoubleArray, position: Int): DoubleArray {
         require(position >= 0 && position + insertVector.size <= originalVector.size) {
             "Позиция вставки выходит за пределы размера исходного вектора."
@@ -77,6 +84,21 @@ class CubeSpline (points: Map<Double, Double>) : InterpolationSpline(points) {
         System.arraycopy(insertVector, 0, resultVector, position, insertVector.size)
         return resultVector
     }
+    private fun computeDerivative(ord: Int): List<SplineSegment> {
+        val derivativeSegments = mutableListOf<SplineSegment>()
+
+        for (segment in segments) {
+            val derivativePolynomial = segment.polynomial.derivative(ord)
+
+            // Создайте новый сегмент с производной полинома
+            val derivativeSegment = SplineSegment(segment.inf, segment.sup, derivativePolynomial)
+            derivativeSegments.add(derivativeSegment)
+        }
+
+        return derivativeSegments
+    }
+    fun derivative(): SegmentedFunction = SegmentedFunction(computeDerivative(1))
+    fun secondDerivative():SegmentedFunction = SegmentedFunction(computeDerivative(2))
 
 }
 

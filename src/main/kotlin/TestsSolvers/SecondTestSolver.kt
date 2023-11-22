@@ -59,29 +59,32 @@ object SecondTestSolver {
         functionTuples.add(Triple(fy,null,Color(66, 170, 255) to "f(x)"))
 
         val ls1 = LinearSpline(firstPoints).also {
-            print("Первый Линенйный Сплайн\n + $it")
+            print("Первый Линенйный Сплайн\n$it")
             checkError(controlPoints,fy,it::invoke)
             functionTuples.add(Triple(it::invoke, firstPoints,Color(229,43,80) to "S_1(x)"))
         }
 
         val ls2 = LinearSpline(secondPoints).also {
-            print("Второй Линенйный Сплайн\n + $it")
+            print("Второй Линенйный Сплайн\n$it")
             checkError(controlPoints,fy,it::invoke)
             functionTuples.add(Triple(it::invoke, secondPoints,Color(68,148,74) to "S_2(x)"))
         }
 
         val cs1 = CubeSpline(firstPoints).also {
-            print("Первый Кубический Сплайн\n + $it")
+            print("Первый Кубический Сплайн\n$it")
             checkError(controlPoints,fy,it::invoke)
             functionTuples.add(Triple(it::invoke, firstPoints,Color(255,176,46) to "S^3_1(x)"))
         }
 
         val cs2 = CubeSpline(secondPoints).also {
-            print("Второй Кубический Сплайн\n + $it")
+            print("Второй Кубический Сплайн\n$it")
             checkError(controlPoints,fy,it::invoke)
             functionTuples.add(Triple(it::invoke, secondPoints,Color(189,	51,	164) to "S^3_1(x)"))
         }
 
+        val cs2d = CubeSpline(secondPoints).derivative().also {
+            functionTuples.add(Triple(it::invoke, secondPoints,Color(189,	51,	164) to "S'^3_1(x)"))
+        }
 
         var xMin = (firstPoints + secondPoints).keys.min()
         var xMax = (firstPoints + secondPoints).keys.max()
@@ -95,5 +98,5 @@ object SecondTestSolver {
         yMax += delta
 
         showPlot(functionTuples,xMin,xMax,yMin,yMax)
-        }
+    }
 }

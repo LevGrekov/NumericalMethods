@@ -3,9 +3,15 @@ package math.splines
 import math.polynomials.NewtonPolynomial
 import java.util.*
 
-class LinearSpline(points: Map<Double, Double>) : InterpolationSpline(points) {
+class LinearSpline(pts: Map<Double, Double>) : SegmentedFunction() {
 
-    override val segments: List<SplineSegment> = buildSegments()
+    val points: Map<Double, Double> = TreeMap(pts)
+    init {
+        segments.apply {
+            clear()
+            addAll(buildSegments())
+        }
+    }
 
     private fun buildSegments(): List<SplineSegment> {
         require(points.isNotEmpty()) { "Points map cannot be empty." }
