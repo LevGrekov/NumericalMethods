@@ -61,29 +61,25 @@ object SecondTestSolver {
         val ls1 = LinearSpline(firstPoints).also {
             print("Первый Линенйный Сплайн\n$it")
             checkError(controlPoints,fy,it::invoke)
-            functionTuples.add(Triple(it::invoke, firstPoints,Color(229,43,80) to "S_1(x)"))
+            functionTuples.add(Triple(it::invoke, firstPoints,Color(229,43,80) to "S₁(x)"))
         }
 
         val ls2 = LinearSpline(secondPoints).also {
             print("Второй Линенйный Сплайн\n$it")
             checkError(controlPoints,fy,it::invoke)
-            functionTuples.add(Triple(it::invoke, secondPoints,Color(68,148,74) to "S_2(x)"))
+            functionTuples.add(Triple(it::invoke, secondPoints,Color(68,148,74) to "S₂(x)"))
         }
 
         val cs1 = CubeSpline(firstPoints).also {
             print("Первый Кубический Сплайн\n$it")
             checkError(controlPoints,fy,it::invoke)
-            functionTuples.add(Triple(it::invoke, firstPoints,Color(255,176,46) to "S^3_1(x)"))
+            functionTuples.add(Triple(it::invoke, firstPoints,Color(255,176,46) to "S₁³(x)"))
         }
 
         val cs2 = CubeSpline(secondPoints).also {
             print("Второй Кубический Сплайн\n$it")
             checkError(controlPoints,fy,it::invoke)
-            functionTuples.add(Triple(it::invoke, secondPoints,Color(189,	51,	164) to "S^3_1(x)"))
-        }
-
-        val cs2d = CubeSpline(secondPoints).derivative().also {
-            functionTuples.add(Triple(it::invoke, secondPoints,Color(189,	51,	164) to "S'^3_1(x)"))
+            functionTuples.add(Triple(it::invoke, secondPoints,Color(189,	51,	164) to "S₂³(x)"))
         }
 
         var xMin = (firstPoints + secondPoints).keys.min()
@@ -91,9 +87,9 @@ object SecondTestSolver {
         var yMin = (firstPoints + secondPoints).values.min()
         var yMax = (firstPoints + secondPoints).values.max()
         val delta = (xMax + xMin + yMax + yMin)/8.0
-        val deltaX = (xMax+xMin)/2.0
-        xMax += 1
-        xMin -= 1
+        val deltaX = (xMax-xMin)
+        xMax += deltaX/10.0
+        xMin -= deltaX/10.0
         yMin -= delta
         yMax += delta
 

@@ -1,29 +1,9 @@
 import TestsSolvers.SecondTestSolver
-import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.*
-import androidx.compose.material.*
-import androidx.compose.runtime.*
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clipToBounds
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowState
 import androidx.compose.ui.window.application
-
-import drawing.painters.FunctionPainter
-import drawing.painters.PointsPainter
-import drawing.convertation.Plane
-import drawing.painters.CartesianPainter
-import math.polynomials.NewtonPolynomial
-import math.splines.CubeSpline
-import math.splines.LinearSpline
-import kotlin.math.cosh
-import kotlin.math.exp
-import kotlin.math.pow
-import kotlin.reflect.KFunction1
+import kotlin.math.*
 
 fun main() = application {
     Window(
@@ -32,18 +12,24 @@ fun main() = application {
         state = WindowState(width = 600.dp, height = 500.dp)
 //        resizable = false,
     ) {
-//        val fx : (Double) -> Double = {x -> exp(x/2) + cosh((x+1)/2)}
-//        SecondTestSolver.solve(
-//            {x -> exp(x/2) + cosh((x+1)/2)},
-//            lowLim = -1.0,
-//            upLim = 1.0,
-//        )
+        val fx : (Double) -> Double = {x -> exp(x/2) + cosh((x+1)/2)}
         SecondTestSolver.solve(
-            {x -> exp(-x.pow(3))},
-            -2.0,
-            -1.0,
-            -1.29, -1.42, -1.76
+            {x -> exp(x/2) + cosh((x+1)/2)},
+            lowLim = -1.0,
+            upLim = 1.0,
         )
+//        SecondTestSolver.solve(
+//            {x -> exp(-x.pow(3))},
+//            -2.0,
+//            -1.0,
+//            -1.29, -1.42, -1.76
+//        )
+//            SecondTestSolver.solve(
+//            {x -> exp(sqrt(x/3.0)*cos(4.0 * x))},
+//            0.2,
+//                (2.0 * Math.PI)/3.0,
+//            0.095*Math.PI, 0.18*Math.PI, 0.42*Math.PI
+//        )
     }
 }
 

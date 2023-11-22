@@ -27,32 +27,68 @@ open class SegmentedFunction() {
         } else append("NULL")
     }
 
-    fun findMaximum(function: (Double) -> Double, lowLim: Double, uplim: Double): Double? {
+    fun findMaximum(): Double {
         val epsilon = 1e-5 // Точность
-        var a = lowLim
-        var b = uplim
+        var a = segments[0].inf
+        var b = segments.last().sup
 
         val goldenRatio = (sqrt(5.0) - 1) / 2
         var x1 = a + (1 - goldenRatio) * (b - a)
         var x2 = a + goldenRatio * (b - a)
 
-        var f1 = function(x1)
-        var f2 = function(x2)
+        var f1 = this(x1)
+        var f2 = this(x2)
+
 
         while (Math.abs(b - a) > epsilon) {
-            if (f1 > f2) {
-                b = x2
-                x2 = x1
-                f2 = f1
-                x1 = a + (1 - goldenRatio) * (b - a)
-                f1 = function(x1)
-            } else {
-                a = x1
-                x1 = x2
-                f1 = f2
-                x2 = a + goldenRatio * (b - a)
-                f2 = function(x2)
+            if (f1 != null && f2 != null){
+                if (f1 > f2) {
+                    b = x2
+                    x2 = x1
+                    f2 = f1
+                    x1 = a + (1 - goldenRatio) * (b - a)
+                    f1 = this(x1)
+                } else {
+                    a = x1
+                    x1 = x2
+                    f1 = f2
+                    x2 = a + goldenRatio * (b - a)
+                    f2 = this(x2)
+                }
             }
+            else continue
+        }
+        return (a + b) / 2
+    }
+    fun findMinimum(): Double{
+        val epsilon = 1e-5 // Точность
+        var a = segments[0].inf
+        var b = segments.last().sup
+
+        val goldenRatio = (Math.sqrt(5.0) - 1) / 2
+        var x1 = a + (1 - goldenRatio) * (b - a)
+        var x2 = a + goldenRatio * (b - a)
+
+        var f1 = this(x1)
+        var f2 = this(x2)
+
+        while (Math.abs(b - a) > epsilon) {
+            if (f1 != null && f2 != null) {
+                if (f1 < f2) {
+                    b = x2
+                    x2 = x1
+                    f2 = f1
+                    x1 = a + (1 - goldenRatio) * (b - a)
+                    f1 = this(x1)
+                } else {
+                    a = x1
+                    x1 = x2
+                    f1 = f2
+                    x2 = a + goldenRatio * (b - a)
+                    f2 = this(x2)
+                }
+            }
+            else continue
         }
 
         return (a + b) / 2
