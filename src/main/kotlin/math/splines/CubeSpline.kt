@@ -1,12 +1,26 @@
 package math.splines
 
 import SystemSolver
+import SystemSolver.printMatrix
 import math.polynomials.Polynomial
 import java.util.*
 import kotlin.math.pow
 
-class CubeSpline (pts: Map<Double, Double>) : SegmentedFunction() {
+enum class SplineCalculationMethod {
+    DEFINITION,
+    MOMENTS,
+}
+
+class CubeSpline
+    (pts: Map<Double, Double>,
+     val method:SplineCalculationMethod = SplineCalculationMethod.DEFINITION) : SegmentedFunction() {
     val points: Map<Double, Double> = TreeMap(pts)
+
+    val x = this.points.keys.toList()
+    val y = this.points.values.toList()
+
+    fun h(i:Int) = x[i] - x[i-1]
+
     init {
         segments.apply {
             clear()
@@ -14,36 +28,90 @@ class CubeSpline (pts: Map<Double, Double>) : SegmentedFunction() {
         }
     }
     private fun buildSegments(): List<SplineSegment> {
-        val coefficients = getCoefficients()
+        val coeff = when (method) {
+            SplineCalculationMethod.DEFINITION -> getCoefficientsDefinition()
+            SplineCalculationMethod.MOMENTS -> getMomentsCoefficients()
+        }
+
         val segments = mutableListOf<SplineSegment>()
-        val iterator = points.iterator()
+        val iterator = points.keys.iterator()
 
+        coeff?.let {
 
-        coefficients?.let {
-            if (iterator.hasNext()) {
-                var (x1, y1) = iterator.next().toPair()
-                var segmentIndex = 0
+            when(method){
+                SplineCalculationMethod.DEFINITION ->{
+                    if (iterator.hasNext()) {
+                        var x1 = iterator.next()
+                        var segInd = 0
 
-                while (iterator.hasNext()) {
-                    val (x2, y2) = iterator.next().toPair()
+                        while (iterator.hasNext()) {
+                            val x2 = iterator.next()
 
-                    val polynomial = Polynomial(
-                        coefficients[4 * segmentIndex+3],
-                        coefficients[4 * segmentIndex+2],
-                        coefficients[4 * segmentIndex+1],
-                        coefficients[4 * segmentIndex])
-                    segments.add(SplineSegment(x1, x2, polynomial))
+                            val polynomial = Polynomial(
+                                coeff[4 * segInd+3],
+                                coeff[4 * segInd+2],
+                                coeff[4 * segInd+1],
+                                coeff[4 * segInd])
+                            segments.add(SplineSegment(x1, x2, polynomial))
 
-                    x1 = x2
-                    y1 = y2
-                    segmentIndex++
+                            x1 = x2
+                            segInd++
+                        }
+                    }
+                }
+                SplineCalculationMethod.MOMENTS -> {
+                    for(i in 1..points.size-1){
+                        val cube = (coeff[i] - coeff[i-1])/(6.0*h(i))
+                        val sq = ((coeff[i-1]*x[i] - coeff[i]*x[i-1])/(2.0*h(i)))
+                        val lin = (h(i) * coeff[i-1] - coeff[i]*h(i) + (3.0*coeff[i] * x[i-1].pow(2.0) - 3.0 * coeff[i-1] * x[i].pow(2.0) + 6.0 * y[i] - 6.0 * y[i-1])/h(i))/6.0
+                        val const = (coeff[i]*h(i)*x[i-1]-h(i)*coeff[i-1]*x[i] + (-coeff[i]*x[i-1].pow(3.0)+coeff[i-1] * x[i].pow(3.0) - 6.0 * x[i-1] * y[i] + 6.0 * x[i] * y[i-1])/h(i))/6.0
+                        val poly = Polynomial(const,lin,sq,cube)
+                        segments.add(SplineSegment(x[i-1], x[i], poly))
+                    }
                 }
             }
         }
         return segments
     }
 
-    private fun getCoefficients(): DoubleArray?{
+    private fun getMomentsCoefficients():DoubleArray? {
+        val segmentsCount = points.size - 1
+
+        fun lambda(k:Int) = h(k+1)/(h(k)+h(k+1))
+        fun mu(k:Int) = h(k)/(h(k)+h(k+1))
+        fun d(k:Int) = (6.0/(h(k)+h(k+1))) * ((y[k+1] - y[k])/h(k+1) - (y[k] - y[k-1])/h(k))
+
+        val matrixSize = points.size
+
+        val matrix = Array(matrixSize) { DoubleArray(matrixSize) }
+        val constants = DoubleArray(matrixSize)
+
+
+        for (i in 1 until matrixSize-1) {
+            println(i)
+            matrix[i][i-1] = mu(i)
+            matrix[i][i] = 2.0
+            matrix[i][i+1] = lambda(i)
+            constants[i] = d(i)
+        }
+
+        matrix[0][0] = 1.0
+        constants[0] = 0.0
+        matrix[matrixSize - 1][matrixSize - 1] = 1.0
+        constants[matrixSize - 1] = 0.0
+
+        printMatrix(matrix)
+        printMatrix(constants)
+        println("\n")
+        val answer = SystemSolver.solveTridiagonalMatrixAkaThomasMethod(matrix,constants)
+        answer.let{
+            printMatrix(answer)
+        }
+
+        return answer
+    }
+
+    private fun getCoefficientsDefinition(): DoubleArray?{
         val n = points.size - 1
         val x = this.points.keys.toList()
         val y = this.points.values.toList()

@@ -108,6 +108,38 @@ object SystemSolver {
         return solution
     }
 
+    fun solveTridiagonalMatrixAkaThomasMethod(matrix: Array<DoubleArray>, constants: DoubleArray): DoubleArray {
+        val n = matrix.size
+
+        val a = DoubleArray(n)
+        val b = DoubleArray(n)
+        val c = DoubleArray(n)
+
+        // Инициализация коэффициентов
+        for (i in 0 until n) {
+            a[i] = matrix[i][if (i > 0) i - 1 else i]
+            b[i] = matrix[i][i]
+            c[i] = matrix[i][if (i < n - 1) i + 1 else i]
+        }
+
+        // Прямой ход метода прогонки
+        for (i in 1 until n) {
+            val m = a[i] / b[i - 1]
+            b[i] -= m * c[i - 1]
+            constants[i] -= m * constants[i - 1]
+        }
+
+        // Обратный ход метода прогонки
+        val x = DoubleArray(n)
+        x[n - 1] = constants[n - 1] / b[n - 1]
+
+        for (i in n - 2 downTo 0) {
+            x[i] = (constants[i] - c[i] * x[i + 1]) / b[i]
+        }
+
+        return x
+    }
+
     fun printMatrix(matrix: Array<DoubleArray>) {
         for (row in matrix) {
             for (element in row) {
