@@ -100,15 +100,7 @@ class CubeSpline
         matrix[matrixSize - 1][matrixSize - 1] = 1.0
         constants[matrixSize - 1] = 0.0
 
-        printMatrix(matrix)
-        printMatrix(constants)
-        println("\n")
-        val answer = SystemSolver.solveTridiagonalMatrixAkaThomasMethod(matrix,constants)
-        answer.let{
-            printMatrix(answer)
-        }
-
-        return answer
+        return SystemSolver.solveTridiagonalMatrixAkaThomasMethod(matrix,constants)
     }
 
     private fun getCoefficientsDefinition(): DoubleArray?{

@@ -7,8 +7,12 @@ import math.findMaxError
 import math.polynomials.NewtonPolynomial
 import math.splines.CubeSpline
 import math.splines.LinearSpline
+import math.splines.SplineCalculationMethod
 import kotlin.math.PI
 import kotlin.math.cos
+import kotlin.random.Random
+import kotlin.system.measureNanoTime
+import kotlin.system.measureTimeMillis
 
 object SecondTestSolver {
     private fun getPoints(
@@ -45,6 +49,16 @@ object SecondTestSolver {
             } ?: "Ваша Функция не существует в точке $x"
             println(result)
         }
+    }
+
+    fun generateDoubleMap(size: Int): Map<Double, Double> {
+        val map = mutableMapOf<Double, Double>()
+        repeat(size) {
+            val key = Random.nextDouble(0.0, 100.0)
+            val value = Random.nextDouble(0.0, 100.0)
+            map[key] = value
+        }
+        return map
     }
 
     @Composable
@@ -102,6 +116,8 @@ object SecondTestSolver {
             errors[name]=error
         }
 
+        println("##########################################################3 Дополнительная часть 3##########################################################")
+
         val L1 = NewtonPolynomial(firstPoints).also {
             val name = "L₁(x)"
             print("Первый Полином Лагранжа\n$it\n")
@@ -130,8 +146,23 @@ object SecondTestSolver {
         val errorLS2 = findMaxError(secondPoints.keys.first(),secondPoints.keys.last(),cs2::invoke,L2::invoke)
         print("Максимальная Погрешность S₂³(x) и L₂(x) = $errorLS2\n\n")
 
+        println("Проверим скорость рачета Кубического сплайна")
+        println("Создадим 200 точек и посмотрим на их примере в наносекундах")
+        val doubleMapArray = generateDoubleMap(200)
+
+        val defTime = measureNanoTime {
+            val a = CubeSpline(doubleMapArray)
+        }
+
+        val momentsTime = measureNanoTime {
+            val b = CubeSpline(doubleMapArray, method = SplineCalculationMethod.MOMENTS)
+        }
+
+        val effCoff = defTime.toDouble()/momentsTime.toDouble()
+        println("(по Определению) / (метод моментов) = $defTime / $momentsTime = $effCoff")
+        println("Таким образом метод моментов быстрее, чем по определению в $effCoff раз ")
+
         var xMin = (firstPoints + secondPoints).keys.min()
-        var xMax = (firstPoints + secondPoints).keys.max()
         var yMin = (firstPoints + secondPoints).values.min()
         var yMax = (firstPoints + secondPoints).values.max()
         val delta = (xMax + xMin + yMax + yMin)/8.0
