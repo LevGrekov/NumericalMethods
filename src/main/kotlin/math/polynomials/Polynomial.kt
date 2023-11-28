@@ -128,11 +128,11 @@ open class Polynomial(coeffs: Map<Int, Double>) {
 
     override fun toString() = toString("x")
 
-    fun toString(variable: String) = _coeffs.toSortedMap(reverseOrder()).map{ (k, v) ->
+    fun toString(variable: String) = _coeffs.toSortedMap(reverseOrder()).map { (k, v) ->
         buildString {
             if (v.neq(0.0, 1e-12)) {
                 append(if (v > 0.0 || v.eq(0.0, 1e-12)) if (k != _coeffs.keys.max()) "+" else "" else "-")
-                if (abs(v) neq 1.0 || k == 0) append(abs(v))
+                if (abs(v) neq 1.0 || k == 0) append(String.format("%.6f", abs(v)))
                 if (k != 0) append(variable)
                 if (k > 1) append("^$k")
             }

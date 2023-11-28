@@ -19,10 +19,10 @@ fun main() = application {
         state = WindowState(width = 800.dp, height = 500.dp)
     ) {
             SecondTestSolver.solve(
-            {x -> exp(sqrt(x/3.0)*cos(4.0 * x))},
-            0.2,
-                (2.0 * Math.PI)/3.0,
-            0.095*Math.PI, 0.18*Math.PI, 0.42*Math.PI
-        )
+                {x->exp(x/2.0)+cosh((x+1.0)/2.0)},
+                  -1.0,
+                  1.0,
+                -5.0 / 8.0, 5.0 / 7.0, 2.0 / 7.0
+            )
     }
 }

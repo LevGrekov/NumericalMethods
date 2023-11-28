@@ -13,7 +13,7 @@ enum class SplineCalculationMethod {
 
 class CubeSpline
     (pts: Map<Double, Double>,
-     val method:SplineCalculationMethod = SplineCalculationMethod.DEFINITION) : SegmentedFunction() {
+     val method:SplineCalculationMethod = SplineCalculationMethod.MOMENTS) : SegmentedFunction() {
     val points: Map<Double, Double> = TreeMap(pts)
 
     val x = this.points.keys.toList()
@@ -60,7 +60,7 @@ class CubeSpline
                     }
                 }
                 SplineCalculationMethod.MOMENTS -> {
-                    for(i in 1..points.size-1){
+                    for(i in 1 until points.size){
                         val cube = (coeff[i] - coeff[i-1])/(6.0*h(i))
                         val sq = ((coeff[i-1]*x[i] - coeff[i]*x[i-1])/(2.0*h(i)))
                         val lin = (h(i) * coeff[i-1] - coeff[i]*h(i) + (3.0*coeff[i] * x[i-1].pow(2.0) - 3.0 * coeff[i-1] * x[i].pow(2.0) + 6.0 * y[i] - 6.0 * y[i-1])/h(i))/6.0
@@ -74,8 +74,7 @@ class CubeSpline
         return segments
     }
 
-    private fun getMomentsCoefficients():DoubleArray? {
-        val segmentsCount = points.size - 1
+    private fun getMomentsCoefficients():DoubleArray {
 
         fun lambda(k:Int) = h(k+1)/(h(k)+h(k+1))
         fun mu(k:Int) = h(k)/(h(k)+h(k+1))
@@ -88,7 +87,6 @@ class CubeSpline
 
 
         for (i in 1 until matrixSize-1) {
-            println(i)
             matrix[i][i-1] = mu(i)
             matrix[i][i] = 2.0
             matrix[i][i+1] = lambda(i)
@@ -100,6 +98,11 @@ class CubeSpline
         matrix[matrixSize - 1][matrixSize - 1] = 1.0
         constants[matrixSize - 1] = 0.0
 
+//        if(points.size<20){
+//            printMatrix(matrix)
+//            println("\n")
+//            printMatrix(constants)
+//        }
         return SystemSolver.solveTridiagonalMatrixAkaThomasMethod(matrix,constants)
     }
 
@@ -133,6 +136,12 @@ class CubeSpline
         matrix[n*4-1] = insertVector(matrix[n*4-1],insertVecSecondDEnd, matrix[n*4-1].size-4 )
         constants[n*4-1] = 0.0
         constants[n*4-1] = 0.0
+
+//        if(points.size<20){
+//            printMatrix(matrix)
+//            println("\n")
+//            printMatrix(constants)
+//        }
 
          return SystemSolver.gaussMethod(matrix,constants)
     }

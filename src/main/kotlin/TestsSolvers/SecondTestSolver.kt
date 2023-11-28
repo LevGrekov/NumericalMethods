@@ -36,7 +36,12 @@ object SecondTestSolver {
         return xyMap
     }
 
-    private fun checkError(name:String,controlPoints: DoubleArray, originalF :(Double)->Double?, yourFunk :(Double)->Double?){
+    private fun checkError(
+        name: String,
+        controlPoints: DoubleArray,
+        originalF: (Double) -> Double?,
+        yourFunk: (Double) -> Double?
+    ) {
         println("Вычислим $name в контрольных точках xi, i = 1..3 и сравним со значениями f(xi)")
         controlPoints.forEachIndexed { i, x ->
             val xInControlPoint = yourFunk(x)
@@ -44,14 +49,14 @@ object SecondTestSolver {
             val result = xInControlPoint?.let { controlPoint ->
                 xInFunk?.let { funk ->
                     val eps = funk - controlPoint
-                    "r$i = f(x$i) - S(x$i) = $funk - $controlPoint = $eps"
+                    "r$i = f(x$i) - S(x$i) = ${"%.6f".format(funk)} - ${"%.6f".format(controlPoint)} = ${"%.6f".format(eps)}"
                 } ?: "Оригинальная Функция не существует в точке $x"
             } ?: "Ваша Функция не существует в точке $x"
             println(result)
         }
     }
 
-    fun generateDoubleMap(size: Int): Map<Double, Double> {
+    private fun generateDoubleMap(size: Int): Map<Double, Double> {
         val map = mutableMapOf<Double, Double>()
         repeat(size) {
             val key = Random.nextDouble(0.0, 100.0)
@@ -76,7 +81,7 @@ object SecondTestSolver {
 
         val errors: MutableMap<String, Double> = mutableMapOf()
 
-        val ls1 = LinearSpline(firstPoints).also {
+        val ls1 = LinearSpline(firstPoints  ).also {
             val name = "S₁(x)"
             print("Первый Линенйный Сплайн\n$it")
             checkError(name,controlPoints,fy,it::invoke)
@@ -96,7 +101,7 @@ object SecondTestSolver {
             errors[name]=error
         }
 
-        val cs1 = CubeSpline(firstPoints).also {
+        val cs1 = CubeSpline(firstPoints,method = SplineCalculationMethod.DEFINITION).also {
             val name = "S₁³(x)"
             print("Первый Кубический Сплайн\n$it")
             checkError(name,controlPoints,fy,it::invoke)
@@ -146,23 +151,28 @@ object SecondTestSolver {
         val errorLS2 = findMaxError(secondPoints.keys.first(),secondPoints.keys.last(),cs2::invoke,L2::invoke)
         print("Максимальная Погрешность S₂³(x) и L₂(x) = $errorLS2\n\n")
 
-        println("Проверим скорость рачета Кубического сплайна")
-        println("Создадим 200 точек и посмотрим на их примере в наносекундах")
-        val doubleMapArray = generateDoubleMap(200)
 
-        val defTime = measureNanoTime {
-            val a = CubeSpline(doubleMapArray)
-        }
 
-        val momentsTime = measureNanoTime {
-            val b = CubeSpline(doubleMapArray, method = SplineCalculationMethod.MOMENTS)
-        }
+        val pointsIntest = 300
+        val doubleMapArray = generateDoubleMap(pointsIntest)
 
-        val effCoff = defTime.toDouble()/momentsTime.toDouble()
-        println("(по Определению) / (метод моментов) = $defTime / $momentsTime = $effCoff")
-        println("Таким образом метод моментов быстрее, чем по определению в $effCoff раз ")
+//        println("Проверим скорость рачета Кубического сплайна")
+//        println("Создадим $pointsIntest точек и сравним время вычисления по определению и через моменты")
+//
+//        val defTime = measureNanoTime {
+//            val a = CubeSpline(doubleMapArray, method = SplineCalculationMethod.DEFINITION)
+//        }
+//
+//        val momentsTime = measureNanoTime {
+//            val b = CubeSpline(doubleMapArray)
+//        }
+//
+//        val effCoff = defTime.toDouble()/momentsTime.toDouble()
+//        println("(по Определению) / (метод моментов) = $defTime / $momentsTime = $effCoff")
+//        println("Таким образом метод моментов быстрее, чем по определению в $effCoff раз для $pointsIntest Узлов  ")
 
         var xMin = (firstPoints + secondPoints).keys.min()
+        var xMax = (firstPoints + secondPoints).keys.max()
         var yMin = (firstPoints + secondPoints).values.min()
         var yMax = (firstPoints + secondPoints).values.max()
         val delta = (xMax + xMin + yMax + yMin)/8.0

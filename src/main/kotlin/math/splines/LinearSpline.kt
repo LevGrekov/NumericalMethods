@@ -21,8 +21,6 @@ class LinearSpline(pts: Map<Double, Double>) : SegmentedFunction() {
 
         if (iterator.hasNext()) {
             var (x1, y1) = iterator.next().toPair()
-            var segmentIndex = 0
-
             while (iterator.hasNext()) {
                 val (x2, y2) = iterator.next().toPair()
 
@@ -31,7 +29,6 @@ class LinearSpline(pts: Map<Double, Double>) : SegmentedFunction() {
 
                 x1 = x2
                 y1 = y2
-                segmentIndex++
             }
         }
         return segments

@@ -30,16 +30,12 @@ fun findMaxError(lowLim: Double, upLim: Double,f: (Double) -> Double?, g: (Doubl
     val a = min(lowLim,upLim)
     val b = max(lowLim,upLim)
     var x = a
-
     var maxError = Double.MIN_VALUE
-
     while (x <= b) {
-        var fvalue = f(x)
-        var gvalue = g(x)
-
-        if(fvalue!= null && gvalue != null){
-            val error = abs(fvalue - gvalue)
-
+        val fValue = f(x)
+        val gValue = g(x)
+        if(fValue!= null && gValue != null){
+            val error = abs(fValue - gValue)
             if (error > maxError) {
                 maxError = error
             }
@@ -47,6 +43,5 @@ fun findMaxError(lowLim: Double, upLim: Double,f: (Double) -> Double?, g: (Doubl
 
         x += epsilon
     }
-
     return maxError
 }
