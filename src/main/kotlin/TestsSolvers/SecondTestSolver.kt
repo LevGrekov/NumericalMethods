@@ -101,8 +101,9 @@ object SecondTestSolver {
             errors[name]=error
         }
 
-        val cs1 = CubeSpline(firstPoints,method = SplineCalculationMethod.DEFINITION).also {
+        val cs1 = CubeSpline(firstPoints,method = SplineCalculationMethod.MOMENTS).also {
             val name = "S₁³(x)"
+            val cs1d = CubeSpline(firstPoints,method = SplineCalculationMethod.DEFINITION)
             print("Первый Кубический Сплайн\n$it")
             checkError(name,controlPoints,fy,it::invoke)
             functionTuples.add(Triple(it::invoke, firstPoints,Triple(Color(255,176,46),name ,true)))
@@ -111,8 +112,9 @@ object SecondTestSolver {
             errors[name]=error
         }
 
-        val cs2 = CubeSpline(secondPoints).also {
+        val cs2 = CubeSpline(secondPoints, method = SplineCalculationMethod.MOMENTS).also {
             val name = "S₂³(x)"
+            val cs2d = CubeSpline(secondPoints,method = SplineCalculationMethod.DEFINITION)
             print("Второй Кубический Сплайн\n$it")
             checkError(name,controlPoints,fy,it::invoke)
             functionTuples.add(Triple(it::invoke, secondPoints, Triple(Color(189,	51,	164),name,true)))

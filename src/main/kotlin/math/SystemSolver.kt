@@ -143,14 +143,16 @@ object SystemSolver {
     fun printMatrix(matrix: Array<DoubleArray>) {
         for (row in matrix) {
             for (element in row) {
-                print("$element ")
+                print("${String.format("%.6f", element)} ")
             }
             println()
         }
+        println()
     }
     fun printMatrix(matrix: DoubleArray) {
         for (element in matrix) {
-            print("$element ")
+            print("${String.format("%.6f", element)} ")
         }
+        println()
     }
 }

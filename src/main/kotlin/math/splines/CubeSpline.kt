@@ -98,12 +98,19 @@ class CubeSpline
         matrix[matrixSize - 1][matrixSize - 1] = 1.0
         constants[matrixSize - 1] = 0.0
 
-//        if(points.size<20){
-//            printMatrix(matrix)
-//            println("\n")
-//            printMatrix(constants)
-//        }
-        return SystemSolver.solveTridiagonalMatrixAkaThomasMethod(matrix,constants)
+        if(points.size<20){
+
+            println("\nМетод Моментов. Решение")
+            println("СЛУ")
+            printMatrix(matrix)
+            println("Это свободные члены ")
+            printMatrix(constants)
+        }
+
+        return SystemSolver.solveTridiagonalMatrixAkaThomasMethod(matrix,constants).also {
+            println("Это решение СЛАУ\n")
+            printMatrix(it)
+        }
     }
 
     private fun getCoefficientsDefinition(): DoubleArray?{
@@ -137,13 +144,18 @@ class CubeSpline
         constants[n*4-1] = 0.0
         constants[n*4-1] = 0.0
 
-//        if(points.size<20){
-//            printMatrix(matrix)
-//            println("\n")
-//            printMatrix(constants)
-//        }
+        if(points.size<20){
+            println("\nПо определению. Решение")
+            println("СЛУ")
+            printMatrix(matrix)
+            println("Это свободные члены ")
+            printMatrix(constants)
+        }
 
-         return SystemSolver.gaussMethod(matrix,constants)
+         return SystemSolver.gaussMethod(matrix,constants).also {
+             println("Это решение СЛАУ\n")
+             printMatrix(it!!)
+         }
     }
     private fun insertVector(originalVector: DoubleArray, insertVector: DoubleArray, position: Int): DoubleArray {
         require(position >= 0 && position + insertVector.size <= originalVector.size) {
