@@ -45,3 +45,11 @@ fun findMaxError(lowLim: Double, upLim: Double,f: (Double) -> Double?, g: (Doubl
     }
     return maxError
 }
+
+fun sgn(x: Double): Double {
+    return when {
+        x eq 0.0 -> 0.0
+        x < 0 -> -1.0
+        else -> 1.0
+    }
+}

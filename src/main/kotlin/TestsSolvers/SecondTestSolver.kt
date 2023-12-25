@@ -115,6 +115,7 @@ object SecondTestSolver {
         val cs2 = CubeSpline(secondPoints, method = SplineCalculationMethod.MOMENTS).also {
             val name = "S₂³(x)"
             val cs2d = CubeSpline(secondPoints,method = SplineCalculationMethod.DEFINITION)
+
             print("Второй Кубический Сплайн\n$it")
             checkError(name,controlPoints,fy,it::invoke)
             functionTuples.add(Triple(it::invoke, secondPoints, Triple(Color(189,	51,	164),name,true)))

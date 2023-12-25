@@ -26,12 +26,11 @@ open class Polynomial(coeffs: Map<Int, Double>) {
         get() = _coeffs.toMap()
 
     val size : Int
-        get() = _coeffs.size
+        get() = highDegree
     val highDegree : Int
         get() =  _coeffs.keys.max()?: 0
     val minorDegree : Int
         get() = _coeffs.keys.min()?: 0
-
 
     constructor(vararg coeffs: Double) : this (coeffs.mapIndexed { index, value -> index to value }.toMap())
     constructor(coeffs: MutableList<Double>) : this (coeffs.mapIndexed { index, value -> index to value }.toMap())
@@ -98,6 +97,8 @@ open class Polynomial(coeffs: Map<Int, Double>) {
 
         return Pair(Polynomial(quotient), Polynomial(remainder))
     }
+
+
     operator fun rem(other: Polynomial) = divide(other).second;
     operator fun div(other: Polynomial) = divide(other).first;
 
@@ -105,7 +106,7 @@ open class Polynomial(coeffs: Map<Int, Double>) {
     operator fun get(degree: Int) = _coeffs[degree] ?: 0.0
     operator fun invoke(scalar: Double) =
         _coeffs.entries.sumOf { (k, v) -> v * scalar.pow(k) }
-    fun derivative(derivOrder: Int): Polynomial {
+    fun derivative(derivOrder: Int = 1): Polynomial {
         val derivativeCoeffs = mutableMapOf<Int, Double>()
         for ((exp, coeff) in _coeffs) {
             if (exp >= derivOrder) {
@@ -115,6 +116,24 @@ open class Polynomial(coeffs: Map<Int, Double>) {
             }
         }
         return Polynomial(derivativeCoeffs)
+    }
+    fun antiderivative(): Polynomial {
+        val antiderivativeCoeffs = mutableMapOf<Int, Double>()
+        for ((exponent, coefficient) in _coeffs) {
+            val newExponent = exponent + 1
+            val newCoefficient = coefficient / newExponent.toDouble()
+
+            antiderivativeCoeffs[newExponent] = newCoefficient
+        }
+        return Polynomial(antiderivativeCoeffs)
+    }
+
+    fun rhimanIntegral(a:Double, b:Double): Double =
+        antiderivative()(b)-antiderivative()(a)
+
+    fun pow(exponent: Int): Polynomial {
+        require(exponent >= 0) { "Exponent must be a non-negative integer." }
+        return (0 until  exponent).fold(Polynomial(mapOf(0 to 1.0))) { acc, _ -> acc * this }
     }
 
     //Переопределение Any
