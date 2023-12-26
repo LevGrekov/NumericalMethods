@@ -33,7 +33,6 @@ class NumericIntegral(
             println("$x$i: $formattedX $y$i: $formattedY")
         }
         println("result = sum = ${points.values.sum()} ")
-
     }
 
     fun leftRectangleMethod(n: Int): Double {
@@ -60,7 +59,7 @@ class NumericIntegral(
             .map { a + it * h }
             .map { (it + (it + h)) / 2 }
             .associateWith { x -> function(x) }
-        pointsLog(points,"(xi + xi+1)/2",)
+        pointsLog(points,"(xi + xi+1)/2")
         return points.values.sum() * h
     }
 
@@ -89,7 +88,7 @@ class NumericIntegral(
         return (first + second + third) * h/3.0
     }
     fun interpolationMethod(n: Int): Double{
-        val h = (b - a) / (n-1).toDouble()
+        val h = (b - a) / (n-1)
         val points = (0 until n)
             .map {i-> a + i * h }
             .associateWith { x -> function(x) }
@@ -139,18 +138,20 @@ class NumericIntegral(
      * квадратурная формула Гаусса с rho = 1/sqrt(1-x^2)
      */
     fun gaussianMethodWithWithSpecialRo(n: Int): Double{
-        var result = 0.0
-        val roots: MutableList<Double> = mutableListOf()
-        for (k in 1..n){
-            val xk = cos((2.0 * k - 1) * PI/(2.0 * n))
-            roots.add(xk)
+        val points = (1..n).map { cos((2.0 * it - 1) * PI/(2.0 * n)) }
+        if(show){
+            println("Находим Корни полинома Чебышева")
+            points.forEachIndexed { i, entry ->
+                val formattedX = "%.6f".format(entry).trimEnd('0').padEnd(7, ' ')
+                println("t$i: $formattedX")
+            }
+            println("Переводим из [-1,1] в [a,b] и берем f(x)")
+            println("Ak для Полинома Чебышева будет для каждого k = pi/n")
         }
-        val mappedRoots = LegendrePolynomial.mapInterval(roots,a,b)
+        val mappedRootsPoints = LegendrePolynomial.mapInterval(points,a,b).associateWith(function)
+        pointsLog(mappedRootsPoints)
+        val Ak = PI/n
 
-        mappedRoots.forEach{ xk ->
-            val Ak = LagrangePolynomial.createFundamentalPoly(mappedRoots,xk).rhimanIntegral(a,b)
-            result += Ak * function(xk)
-        }
-        return result
+        return mappedRootsPoints.values.sum() * Ak
     }
 }

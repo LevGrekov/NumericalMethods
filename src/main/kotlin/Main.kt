@@ -24,7 +24,7 @@ fun main() = application {
 }
 
 fun old(){
-    //        SecondTestSolver.solve(
+//        SecondTestSolver.solve(
 //            {x->exp(x/2.0)+cosh((x+1.0)/2.0)},
 //            -1.0,
 //            1.0,
