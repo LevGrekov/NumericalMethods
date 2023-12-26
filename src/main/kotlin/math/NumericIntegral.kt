@@ -2,6 +2,7 @@ package math
 
 import math.polynomials.LagrangePolynomial
 import math.polynomials.LegendrePolynomial
+import math.polynomials.NewtonPolynomial
 import kotlin.math.PI
 import kotlin.math.cos
 
@@ -17,21 +18,45 @@ class NumericIntegral(
         this.a = minOf(lowerBound, upperBound)
         this.b = maxOf(lowerBound, upperBound)
     }
-    fun calculateRectangleMethod(n: Int): Double {
+    fun leftRectangleMethod(n: Int): Double {
         val h = (b - a) / n
-
         var result = 0.0
 
         for (i in 0 until n) {
             val xi = a + i * h
-            result += function(xi)
+            result += h * function(xi)
         }
 
-        result *= h
         return result
     }
 
-    fun calculateTrapezoidalMethod(n: Int): Double {
+    fun rightRectangleMethod(n: Int): Double {
+        val h = (b - a) / n
+        var result = 0.0
+
+        for (i in 1..n) {
+            val xi = a + i * h
+            result += h * function(xi)
+        }
+
+        return result
+    }
+
+    fun middleRectangleMethod(n: Int): Double {
+        val h = (b - a) / n
+        var result = 0.0
+
+        for (i in 0 until n) {
+            val xi = a + i * h
+            val xiNext = a + (i + 1) * h
+            val xiMid = (xi + xiNext) / 2
+            result += h * function(xiMid)
+        }
+
+        return result
+    }
+
+    fun trapezoidalMethod(n: Int): Double {
         val h = (b - a) / n
 
         var result = 0.0
@@ -47,7 +72,7 @@ class NumericIntegral(
         return result
     }
 
-    fun calculateSimpsonMethod(n: Int): Double {
+    fun simpsonMethod(n: Int): Double {
         val h = (b - a) / n
         var result = function(a) + function(b)
 
@@ -66,7 +91,7 @@ class NumericIntegral(
         val legendrePoly = LegendrePolynomial(n)
         val roots = OptimizationMethods.findRoots(-1.0, 1.0, legendrePoly::invoke, legendrePoly.derivative(1)::invoke)
         if (roots.size != legendrePoly.size) throw Exception("Корни Полинома Лежандра нашлись неверно")
-        val mappedRoots = roots.map { LegendrePolynomial.mapInterval(it,a,b) }
+        val mappedRoots = LegendrePolynomial.mapInterval(roots,a,b)
 
         mappedRoots.forEach{ xk ->
             val Ak = LagrangePolynomial.createFundamentalPoly(mappedRoots,xk).rhimanIntegral(a,b)
@@ -85,7 +110,7 @@ class NumericIntegral(
             val xk = cos((2.0 * k - 1) * PI/(2.0 * n))
             roots.add(xk)
         }
-        val mappedRoots = roots.map { LegendrePolynomial.mapInterval(it,a,b) }
+        val mappedRoots = LegendrePolynomial.mapInterval(roots,a,b)
 
         mappedRoots.forEach{ xk ->
             val Ak = LagrangePolynomial.createFundamentalPoly(mappedRoots,xk).rhimanIntegral(a,b)
@@ -94,11 +119,11 @@ class NumericIntegral(
         return result
     }
 
-    fun InterpolationMethod(n: Int): Double{
+    fun interpolationMethod(n: Int): Double{
         val h = (b - a) / (n-1).toDouble()
         val pointsX = (0 until n).map { a + it * h }.toList()
         val points = pointsX.associateWith { function(it) }
-        val poly = LagrangePolynomial(points)
+        val poly = NewtonPolynomial(points)
         return poly.rhimanIntegral(a,b)
     }
 }

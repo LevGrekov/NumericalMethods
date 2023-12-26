@@ -4,24 +4,28 @@ import math.NumericIntegral
 
 object ThirdTestSolver {
     fun solve(firstIntegral:NumericIntegral, secondIntegral: NumericIntegral){
-        val answerSquares = firstIntegral.calculateRectangleMethod(10)
-        println(answerSquares)
 
-        val anwserMidSquares = firstIntegral.calculateTrapezoidalMethod(10)
-        println(anwserMidSquares)
+        firstIntegral.apply {
+            println("Левые прямоугольники: ${leftRectangleMethod(10)}")
+            println("Правые прямоугольники: ${rightRectangleMethod(10)}")
+            println("Средние прямоугольники: ${middleRectangleMethod(10)}")
+            println("Симпсона: ${simpsonMethod(10)}")
+            println("Гаусс rho = 1 (4): ${gaussianMethodWithRo1(6)}")
+            println("Интерполяционный метод: ${interpolationMethod(10)}")
+            println("Гаусс rh0 = 1/sqrt(1-x^2) (6): ${gaussianMethodWithRo1(6)}")
+        }
 
-        val answerSimpson = firstIntegral.calculateSimpsonMethod(10)
-        println(answerSimpson)
+        println("\n")
 
-        val answerGauss = firstIntegral.gaussianMethodWithRo1(6)
-        println(answerGauss)
+        secondIntegral.apply {
+            println("Левые прямоугольники: ${leftRectangleMethod(10)}")
+            println("Правые прямоугольники: ${rightRectangleMethod(10)}")
+            println("Средние прямоугольники: ${middleRectangleMethod(10)}")
+            println("Симпсона: ${simpsonMethod(10)}")
+            println("Гаусс rho = 1 (4): ${gaussianMethodWithRo1(6)}")
+            println("Интерполяционный метод: ${interpolationMethod(10)}")
+            println("Гаусс rh0 = 1/sqrt(1-x^2) (6): ${gaussianMethodWithRo1(6)}")
+        }
 
-        val answerGauss2 = firstIntegral.gaussianMethodWithWithSpecialRo(6)
-        println("Салам")
-        println(answerGauss2)
-
-        val interpolAnswer = firstIntegral.InterpolationMethod(10)
-        println("Интерпол")
-        println(interpolAnswer)
     }
 }

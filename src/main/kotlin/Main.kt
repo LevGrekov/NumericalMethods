@@ -20,13 +20,6 @@ fun main() = application {
         val firstIntegral = NumericIntegral({ x-> sqrt(2.0 * x * x + 1.6)/(2.0 * x + sqrt(0.5 * x * x + 3.0))},1.2,2.0)
         val secondIntegral = NumericIntegral({ x-> sin(0.5*x+0.4)/(1.2+cos(x*x+0.4))},0.5,1.3)
         ThirdTestSolver.solve(firstIntegral,secondIntegral)
-
-
-        val (a,b)  = 0.4 to 1.2
-        val n = 10
-        val h = (b - a) / (n-1).toDouble()
-        val roots = (0 until n).map { a + it * h }.toList()
-        print(roots)
     }
 }
 
