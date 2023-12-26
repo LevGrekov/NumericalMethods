@@ -3,57 +3,65 @@ package math
 import math.polynomials.LagrangePolynomial
 import math.polynomials.LegendrePolynomial
 import math.polynomials.NewtonPolynomial
+import java.lang.StringBuilder
 import kotlin.math.PI
 import kotlin.math.cos
 
 class NumericIntegral(
     private val function: (Double) -> Double,
     lowerBound: Double,
-    upperBound: Double
+    upperBound: Double,
+    showSolvingWay: Boolean = false
 ) {
     private val a: Double
     private val b: Double
+    private val show: Boolean
 
     init {
         this.a = minOf(lowerBound, upperBound)
         this.b = maxOf(lowerBound, upperBound)
+        this.show = showSolvingWay
     }
+
+    private fun pointsLog(points: Map<Double, Double>,x:String="x",y:String="y") {
+        if (!show) return
+        val width = 8
+
+        points.entries.forEachIndexed { i, entry ->
+            val formattedX = "%.6f".format(entry.key).trimEnd('0').padEnd(width, ' ')
+            val formattedY = "%.6f".format(entry.value).trimEnd('0').padStart(width, ' ')
+            println("$x$i: $formattedX $y$i: $formattedY")
+        }
+        println("result = sum = ${points.values.sum()} ")
+
+    }
+
     fun leftRectangleMethod(n: Int): Double {
         val h = (b - a) / n
-        var result = 0.0
-
-        for (i in 0 until n) {
-            val xi = a + i * h
-            result += h * function(xi)
-        }
-
-        return result
+        val points = (0 until n)
+            .map {i-> a + i * h }
+            .associateWith { x -> function(x) }
+        pointsLog(points)
+        return points.values.sum() * h
     }
 
     fun rightRectangleMethod(n: Int): Double {
         val h = (b - a) / n
-        var result = 0.0
-
-        for (i in 1..n) {
-            val xi = a + i * h
-            result += h * function(xi)
-        }
-
-        return result
+        val points = (1..n)
+            .map {i-> a + i * h }
+            .associateWith { x -> function(x) }
+        pointsLog(points)
+        return points.values.sum() * h
     }
 
     fun middleRectangleMethod(n: Int): Double {
         val h = (b - a) / n
-        var result = 0.0
-
-        for (i in 0 until n) {
-            val xi = a + i * h
-            val xiNext = a + (i + 1) * h
-            val xiMid = (xi + xiNext) / 2
-            result += h * function(xiMid)
-        }
-
-        return result
+        val points =  (0 until n)
+            .map { a + it * h }
+            .map { (it + (it + h)) / 2 }
+            .associateWith { x -> function(x) }
+        pointsLog(points,"(xi + xi+1)/2",)
+        return points.values.sum() * h
     }
 
     fun trapezoidalMethod(n: Int): Double {
@@ -74,14 +82,27 @@ class NumericIntegral(
 
     fun simpsonMethod(n: Int): Double {
         val h = (b - a) / n
-        var result = function(a) + function(b)
-
-        for (i in 1 until n) {
-            val x = a + i * h
-            result += if (i % 2 == 0) 2 * function(x) else 4 * function(x)
+        val xValues = (0 until n).map { a + it * h }
+        val first = function(a) + function(b)
+        val second = 4 * xValues.filterIndexed { index, _ -> index % 2 == 1 }.sumOf { function(it) }
+        val third = 2 * xValues.filterIndexed { index, _ -> index % 2 == 0 && index != 0 && index != n }.sumOf { function(it) }
+        return (first + second + third) * h/3.0
+    }
+    fun interpolationMethod(n: Int): Double{
+        val h = (b - a) / (n-1).toDouble()
+        val points = (0 until n)
+            .map {i-> a + i * h }
+            .associateWith { x -> function(x) }
+        pointsLog(points)
+        val poly = NewtonPolynomial(points)
+        val integral = poly.antiderivative()
+        if(show){
+            println("Создаем Полином Лагранжа и берем от него интеграл Римана ")
+            println("L= $poly")
+            println("F(L)= $integral")
+            println("I= F(L) = F(L)(b) - F(F)(a) = ${integral(b)-integral(a)}")
         }
-
-        return result * h / 3
+        return poly.rhimanIntegral(a,b)
     }
     /**
      * квадратурная формула Гаусса с rho = 1
@@ -117,13 +138,5 @@ class NumericIntegral(
             result += Ak * function(xk)
         }
         return result
-    }
-
-    fun interpolationMethod(n: Int): Double{
-        val h = (b - a) / (n-1).toDouble()
-        val pointsX = (0 until n).map { a + it * h }.toList()
-        val points = pointsX.associateWith { function(it) }
-        val poly = NewtonPolynomial(points)
-        return poly.rhimanIntegral(a,b)
     }
 }

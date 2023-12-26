@@ -14,11 +14,11 @@ import kotlin.math.sqrt
 fun main() = application {
     Window(
         onCloseRequest = ::exitApplication,
-        title = "Вторая Контрольная По Численным Методам",
+        title = "Третья Контрольная По Численным Методам",
         state = WindowState(width = 800.dp, height = 500.dp)
     ) {
-        val firstIntegral = NumericIntegral({ x-> sqrt(2.0 * x * x + 1.6)/(2.0 * x + sqrt(0.5 * x * x + 3.0))},1.2,2.0)
-        val secondIntegral = NumericIntegral({ x-> sin(0.5*x+0.4)/(1.2+cos(x*x+0.4))},0.5,1.3)
+        val firstIntegral = NumericIntegral({ x-> sqrt(2.0 * x * x + 1.6)/(2.0 * x + sqrt(0.5 * x * x + 3.0))},1.2,2.0,true)
+        val secondIntegral = NumericIntegral({ x-> sin(0.5*x+0.4)/(1.2+cos(x*x+0.4))},0.5,1.3,true)
         ThirdTestSolver.solve(firstIntegral,secondIntegral)
     }
 }
