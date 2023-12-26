@@ -113,9 +113,23 @@ class NumericIntegral(
         val roots = OptimizationMethods.findRoots(-1.0, 1.0, legendrePoly::invoke, legendrePoly.derivative(1)::invoke)
         if (roots.size != legendrePoly.size) throw Exception("Корни Полинома Лежандра нашлись неверно")
         val mappedRoots = LegendrePolynomial.mapInterval(roots,a,b)
-
-        mappedRoots.forEach{ xk ->
+        if(show){
+            println("Находим Корни полинома Лежандра")
+            roots.forEachIndexed { i, entry ->
+                val formattedX = "%.6f".format(entry).trimEnd('0').padEnd(7, ' ')
+                println("t$i: $formattedX")
+            }
+            println("Переводим из [-1,1] в [a,b] и берем f(x)")
+            pointsLog(mappedRoots.associateWith(function))
+            println("Находим Ak , чтобы потом сложить Ak*f(xk)")
+        }
+        mappedRoots.forEachIndexed{i, xk ->
             val Ak = LagrangePolynomial.createFundamentalPoly(mappedRoots,xk).rhimanIntegral(a,b)
+            if(show){
+                val formattedX = "%.6f".format(Ak).trimEnd('0').padEnd(7, ' ')
+                println("A$i: $formattedX")
+            }
+
             result += Ak * function(xk)
         }
         return result
