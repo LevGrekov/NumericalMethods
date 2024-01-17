@@ -3,61 +3,48 @@ package drawing.compose
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.gestures.rememberTransformableState
+import androidx.compose.foundation.gestures.transformable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clipToBounds
-import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.PointerEventType
+import androidx.compose.ui.input.pointer.onPointerEvent
 import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Window
-import androidx.compose.ui.window.WindowState
-import androidx.compose.ui.window.application
 import drawing.convertation.Plane
-import drawing.darkenColor
 import drawing.painters.CartesianPainter
-import drawing.painters.FunctionPainter
-import drawing.painters.PointsPainter
-import kotlin.math.roundToInt
-import kotlin.reflect.KFunction1
+import drawing.painters.GPainter
+import kotlin.math.abs
 
 
-@OptIn(ExperimentalTextApi::class)
+@OptIn(ExperimentalTextApi::class, ExperimentalComposeUiApi::class)
 @Composable
 fun showPlot(
-    functions: List<Triple<(Double) -> Double?, Map<Double,Double>?, Triple<Color,String,Boolean>>>,
-    xMin: Double,
-    xMax: Double,
-    yMin: Double,
-    yMax: Double,
+    painters: List<GPainter>,
+    xMin:Double = -20.0,
+    xMax:Double = 20.0,
+    yMin:Double = -20.0,
+    yMax:Double = 20.0
 ) {
+    var funksShows by remember { mutableStateOf(painters.map{it.show}) }
+
+    var scale by remember { mutableStateOf(1f) }
+    var offset by remember { mutableStateOf(Offset.Zero) }
+
+    val transformState = rememberTransformableState { zoomChange, offsetChange, _ ->
+        scale *= zoomChange
+        offset += offsetChange
+    }
 
     val cartesianPainter = CartesianPainter(showGrid = true)
     cartesianPainter.plane = Plane(xMin, xMax, yMin, yMax,0f,0f)
-
-    fun generatePainters(functions: List<Triple<(Double) -> Double?, Map<Double,Double>?, Triple<Color,String,Boolean>>>):
-            List<Triple<FunctionPainter, PointsPainter, Pair<Boolean,String>>> =
-        functions.map { (function, points, colorNameBoolTuple) ->
-            val funkPainter = FunctionPainter(function, colorNameBoolTuple.first)
-            funkPainter.plane = cartesianPainter.plane
-
-            val pointsPainter = if(points == null){
-                PointsPainter(mapOf(), colorNameBoolTuple.first, 2f)
-            }
-            else{
-                PointsPainter(points, colorNameBoolTuple.first, 2f)
-            }
-            pointsPainter.plane = cartesianPainter.plane
-
-            Triple(funkPainter, pointsPainter, colorNameBoolTuple.third to colorNameBoolTuple.second)
-        }
-
-    var painters by remember { mutableStateOf(generatePainters(functions)) }
-
     cartesianPainter.textMeasurer = rememberTextMeasurer()
 
     MaterialTheme {
@@ -69,30 +56,50 @@ fun showPlot(
                 Modifier.padding(1.dp).fillMaxSize(),
                 verticalArrangement = Arrangement.Bottom
             ) {
-                Canvas(
-                    Modifier
-                        .fillMaxSize()
-                        .weight(1f)
-                        .background(Color.White)
-                        .clipToBounds()
+                Canvas( Modifier
+                    .fillMaxSize()
+                    .weight(1f)
+                    .background(Color.White)
+                    .transformable(transformState)
+                    .onPointerEvent(PointerEventType.Scroll) {
+                        scale += it.changes.first().scrollDelta.y
+                    },
                 ) {
-                    cartesianPainter.plane?.width = size.width
-                    cartesianPainter.plane?.height = size.height
+                    cartesianPainter.plane?.let {
+                        it.width = size.width
+                        it.height = size.height
+                        var trueScale = maxOf(scale, 1f/ abs(scale)).toDouble()
+                        if(scale == 0f) trueScale = 1.0
+                        it.xMin = (xMin - offset.x/10.0) * trueScale
+                        it.xMax = (xMax - offset.x/10.0) * trueScale
+                        it.yMin = (yMin + offset.y/10.0) * trueScale
+                        it.yMax = (yMax + offset.y/10.0) * trueScale
+                    }
                     cartesianPainter.paint(this)
+                    println(offset)
+                    painters.forEachIndexed{index, painter ->
+                        cartesianPainter.plane?.let {
+                            painter.funkPainter.plane = cartesianPainter.plane
+                            painter.funkPainter.plane?.width = it.width
+                            painter.funkPainter.plane?.height = it.height
 
-                    painters.forEach { (funkPainter, pointsPainter, boolNamePair) ->
-                        funkPainter.plane?.width = size.width
-                        funkPainter.plane?.height = size.height
+                            painter.pointsPainter?.let {pp ->
+                                pp.plane = cartesianPainter.plane
+                                pp.plane?.width = size.width
+                                pp.plane?.height = size.height
+                            }
 
-                        pointsPainter.plane?.width = size.width
-                        pointsPainter.plane?.height = size.height
+                        }
 
-                        if (boolNamePair.first) {
-                            funkPainter.paint(this)
-                            pointsPainter.paint(this)
+
+                        println(funksShows[index])
+                        if (funksShows[index]) {
+                            painter.funkPainter.paint(this)
+                            painter.pointsPainter?.paint(this)
                         }
                     }
                 }
+
                 Column(
                     Modifier
                         .fillMaxWidth()
@@ -104,24 +111,20 @@ fun showPlot(
                             .padding(4.dp),
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        painters.forEachIndexed { index, (functionPainter, pointsPainter, boolName) ->
+                        painters.forEachIndexed { index, it ->
                             Row(
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.spacedBy(4.dp)
                             ) {
                                 Switch(
-                                    checked = boolName.first,
-                                    onCheckedChange = {
-                                        painters = painters.toMutableList().apply {
-                                            this[index] = Triple(functionPainter, pointsPainter, it to boolName.second)
-                                        }
-                                    },
+                                    checked = funksShows[index],
+                                    onCheckedChange = { newBool -> funksShows = funksShows.toMutableList().apply { this[index] = newBool } },
                                     colors = SwitchDefaults.colors(
-                                        checkedThumbColor = functionPainter.color
+                                        checkedThumbColor = it.funkPainter.color
                                     )
                                 )
                                 Text(
-                                    text = boolName.second,
+                                    text = it.text ?: "",
                                     modifier = Modifier.padding(2.dp)
                                 )
                             }

@@ -9,31 +9,6 @@ object Stepic {
     fun getMagnitude(number: Double): Double =
         10.0.pow(floor(log10(abs(number))))
 
-    fun getStepNotWorking(plane: Plane): Double {
-        plane.apply {
-            return when {
-                xDen <= 28.0 -> 1.0 * getMagnitude(deltaX)
-                xDen in 28.0..56.0 -> 2.0 * getMagnitude(deltaX)
-                xDen in 56.0..140.0 -> 5.0 * getMagnitude(deltaX)
-                xDen > 140.0 -> 10.0
-                else -> throw Exception("Непонятно как так случилось")
-            } / getMagnitude(deltaX)
-        }
-    }
-    fun getStep(delta:Double): Int {
-        val mg = getMagnitude(delta)
-        val a = when (delta) {
-            in 28.0..56.0 -> 2 //1
-            in 56.0..140.0 -> 5 //2
-            in 140.0..280.0 -> 10 //3
-            in 280.0..560.0 -> 20 // 4
-            in 560.0..1400.0 -> 50 // 5
-            in 1400.0..2800.0 -> 100 // 6
-            else -> throw Exception("Так не может быть")
-        }
-        println(a)
-        return a
-    }
     fun getLowerLim(xMin: Double, step: Double) : Double {
         val ll = step * floor(xMin / step)
         return  if(ll>xMin) ll else ll+step

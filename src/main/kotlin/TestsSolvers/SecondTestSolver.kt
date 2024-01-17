@@ -3,6 +3,9 @@ package TestsSolvers
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import drawing.compose.showPlot
+import drawing.painters.GPainter
+import drawing.painters.PointsPainter
+import drawing.painters.functions.UsualFunctionPainter
 import math.findMaxError
 import math.polynomials.NewtonPolynomial
 import math.splines.CubeSpline
@@ -75,17 +78,21 @@ object SecondTestSolver {
         val fx2: (Double, Double, Int) -> Double = {a,b,k -> (b-a)/2 * cos(((2*k - 1)* PI)/10) + (b+a)/2}
         val secondPoints = getPoints(fx2, fy, lowLim, upLim, 1, 5)
 
-        val functionTuples: MutableList<Triple<(Double) -> Double?, Map<Double, Double>?,Triple<Color,String,Boolean>>> = mutableListOf()
+        val functionTuples: MutableList<GPainter> = mutableListOf()
 
-        functionTuples.add(Triple(fy,null,Triple(Color(66, 170, 255,),"f(x)",true)))
+
+        functionTuples.add(GPainter(UsualFunctionPainter(fy,Color(66, 170, 255,)),null,"f(x)"))
 
         val errors: MutableMap<String, Double> = mutableMapOf()
+
+        val pointRadius = 2f
 
         val ls1 = LinearSpline(firstPoints  ).also {
             val name = "S₁(x)"
             print("Первый Линенйный Сплайн\n$it")
             checkError(name,controlPoints,fy,it::invoke)
-            functionTuples.add(Triple(it::invoke, firstPoints,Triple(Color(229,43,80), name ,true)))
+            val color = Color(229,43,80)
+            functionTuples.add(GPainter(UsualFunctionPainter(it::invoke,color),PointsPainter(firstPoints,color,pointRadius),name))
             val error = findMaxError(firstPoints.keys.first(),firstPoints.keys.last(),fy,it::invoke)
             print("Максимальная Погрешность на на промежутке = $error\n\n")
             errors[name]=error
@@ -95,7 +102,8 @@ object SecondTestSolver {
             val name = "S₂(x)"
             print("Второй Линенйный Сплайн\n$it")
             checkError(name,controlPoints,fy,it::invoke)
-            functionTuples.add(Triple(it::invoke, secondPoints, Triple(Color(68,148,74),name,true)))
+            val color = Color(68,148,74)
+            functionTuples.add(GPainter(UsualFunctionPainter(it::invoke,color),PointsPainter(secondPoints,color,pointRadius),name))
             val error = findMaxError(secondPoints.keys.first(),secondPoints.keys.last(),fy,it::invoke)
             print("Максимальная Погрешность на на промежутке = $error\n\n")
             errors[name]=error
@@ -106,7 +114,8 @@ object SecondTestSolver {
             val cs1d = CubeSpline(firstPoints,method = SplineCalculationMethod.DEFINITION)
             print("Первый Кубический Сплайн\n$it")
             checkError(name,controlPoints,fy,it::invoke)
-            functionTuples.add(Triple(it::invoke, firstPoints,Triple(Color(255,176,46),name ,true)))
+            val color = Color(255,176,46)
+            functionTuples.add(GPainter(UsualFunctionPainter(it::invoke,color),PointsPainter(firstPoints,color,pointRadius),name))
             val error = findMaxError(firstPoints.keys.first(),firstPoints.keys.last(),fy,it::invoke)
             print("Максимальная Погрешность на на промежутке = $error\n\n")
             errors[name]=error
@@ -118,7 +127,8 @@ object SecondTestSolver {
 
             print("Второй Кубический Сплайн\n$it")
             checkError(name,controlPoints,fy,it::invoke)
-            functionTuples.add(Triple(it::invoke, secondPoints, Triple(Color(189,	51,	164),name,true)))
+            val color = Color(189,	51,	164)
+            functionTuples.add(GPainter(UsualFunctionPainter(it::invoke,color),PointsPainter(secondPoints,color,pointRadius),name))
             val error = findMaxError(secondPoints.keys.first(),secondPoints.keys.last(),fy,it::invoke)
             print("Максимальная Погрешность на на промежутке = $error\n\n")
             errors[name]=error
@@ -130,7 +140,8 @@ object SecondTestSolver {
             val name = "L₁(x)"
             print("Первый Полином Лагранжа\n$it\n")
             checkError(name,controlPoints,fy,it::invoke)
-            functionTuples.add(Triple(it::invoke, firstPoints, Triple(Color(255,79,	0),name,false)))
+            val color = Color(255,79,0)
+            functionTuples.add(GPainter(UsualFunctionPainter(it::invoke,color),PointsPainter(firstPoints,color,pointRadius),name))
             val error = findMaxError(firstPoints.keys.first(),firstPoints.keys.last(),fy,it::invoke)
             print("Максимальная Погрешность на на промежутке = $error\n\n")
             errors[name]=error
@@ -140,7 +151,8 @@ object SecondTestSolver {
             val name = "L₂(x)"
             print("Второй Полином Лагранжа\n$it\n")
             checkError(name,controlPoints,fy,it::invoke)
-            functionTuples.add(Triple(it::invoke, secondPoints,Triple(Color(0	,71	,171),name,false)))
+            val color = Color(0	,71,171)
+            functionTuples.add(GPainter(UsualFunctionPainter(it::invoke,color),PointsPainter(secondPoints,color,pointRadius),name))
             val error = findMaxError(secondPoints.keys.first(),secondPoints.keys.last(),fy,it::invoke)
             print("Максимальная Погрешность на на промежутке = $error\n\n")
             errors[name]=error
@@ -153,7 +165,6 @@ object SecondTestSolver {
 
         val errorLS2 = findMaxError(secondPoints.keys.first(),secondPoints.keys.last(),cs2::invoke,L2::invoke)
         print("Максимальная Погрешность S₂³(x) и L₂(x) = $errorLS2\n\n")
-
 
 
         val pointsIntest = 300
@@ -178,13 +189,9 @@ object SecondTestSolver {
         var xMax = (firstPoints + secondPoints).keys.max()
         var yMin = (firstPoints + secondPoints).values.min()
         var yMax = (firstPoints + secondPoints).values.max()
-        val delta = (xMax + xMin + yMax + yMin)/8.0
-        val deltaX = (xMax-xMin)
-        xMax += deltaX/10.0
-        xMin -= deltaX/10.0
-        yMin -= delta
-        yMax += delta
 
-        showPlot(functionTuples,xMin,xMax,yMin,yMax)
+
+        //showPlot(functionTuples,xMin,xMax,yMin,yMax)
+        showPlot(functionTuples)
     }
 }

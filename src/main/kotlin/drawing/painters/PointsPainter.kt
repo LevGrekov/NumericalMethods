@@ -7,7 +7,7 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import drawing.convertation.Converter
 import drawing.convertation.Plane
 
-class PointsPainter(var points: Map<Double,Double>, val color: Color, val radius:Float) : Painter {
+class PointsPainter(private var points: Map<Double,Double>, private val color: Color, private val radius:Float) : Painter {
 
     var plane: Plane? = null
 
@@ -22,17 +22,14 @@ class PointsPainter(var points: Map<Double,Double>, val color: Color, val radius
             points.forEach{
                 val scrX = Converter.xCrt2Scr(it.key,plane)
                 val scrY = Converter.yCrt2Scr(it.value,plane)
-
                 if( scrX in radius..plane.width - radius &&
-                    scrY in radius..plane.height - radius)
-
+                    scrY in radius..plane.height - radius){
                     scope.apply {
                         drawCircle(color, radius, Offset(scrX,scrY))
                         drawCircle(color = Color.Black, radius, center = Offset(scrX, scrY), style = Stroke(1f))
                     }
+                }
             }
         }
     }
-
-
 }

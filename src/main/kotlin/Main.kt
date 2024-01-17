@@ -1,3 +1,4 @@
+import TestsSolvers.SecondTestSolver
 import TestsSolvers.ThirdTestSolver
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
@@ -7,9 +8,7 @@ import math.NumericIntegral
 import math.OptimizationMethods
 import math.polynomials.LegendrePolynomial
 import math.polynomials.Polynomial
-import kotlin.math.cos
-import kotlin.math.sin
-import kotlin.math.sqrt
+import kotlin.math.*
 
 fun main() = application {
     Window(
@@ -17,14 +16,20 @@ fun main() = application {
         title = "Третья Контрольная По Численным Методам",
         state = WindowState(width = 800.dp, height = 500.dp)
     ) {
-        val firstIntegral = NumericIntegral({ x-> sqrt(2.0 * x * x + 1.6)/(2.0 * x + sqrt(0.5 * x * x + 3.0))},1.2,2.0,true)
-        val secondIntegral = NumericIntegral({ x-> sin(0.5*x+0.4)/(1.2+cos(x*x+0.4))},0.5,1.3,true)
-        ThirdTestSolver.solve(firstIntegral,secondIntegral)
+//        val firstIntegral = NumericIntegral({ x-> sqrt(2.0 * x * x + 1.6)/(2.0 * x + sqrt(0.5 * x * x + 3.0))},1.2,2.0,true)
+//        val secondIntegral = NumericIntegral({ x-> sin(0.5*x+0.4)/(1.2+cos(x*x+0.4))},0.5,1.3,true)
+//        ThirdTestSolver.solve(firstIntegral,secondIntegral)
+        SecondTestSolver.solve(
+            {x->exp(x/2.0)+cosh((x+1.0)/2.0)},
+            -1.0,
+            1.0,
+            -5.0 / 8.0, 5.0 / 7.0, 2.0 / 7.0
+        )
     }
 }
 
 fun old(){
-//        SecondTestSolver.solve(
+//            SecondTestSolver.solve(
 //            {x->exp(x/2.0)+cosh((x+1.0)/2.0)},
 //            -1.0,
 //            1.0,

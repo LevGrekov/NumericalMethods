@@ -2,54 +2,49 @@ package drawing.painters
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.DrawScope
-import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
-import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
 import org.jetbrains.skia.Font
 import org.jetbrains.skia.Paint
-import org.jetbrains.skia.TextLine
 import drawing.convertation.Converter
 import drawing.convertation.Plane
 import drawing.convertation.Stepic
 import math.neq
 import java.text.DecimalFormat
+import kotlin.math.abs
 
 @OptIn(ExperimentalTextApi::class)
 open class CartesianPainter(val showGrid: Boolean) : Painter {
 
     companion object{
-        private val paint = Paint().apply {
-            color = Color.Black.toArgb()
-        }
-        private val font = Font().apply {
-            size = 24f
-        }
         private val df =  DecimalFormat("#.##########")
-        val AXIS_COLOR = Color.Black
-        val GRID_COLOR = Color.LightGray
-        const val GRID_WIDTH = 0.7f
-        val LABELS_COLOR = Color.Black
-        val FONT_SIZE = 12.sp
-        val FONT_WEIGHT = FontWeight.Medium
+        var AXIS_COLOR = Color.Black
+        var GRID_COLOR = Color.LightGray
+        var GRID_WIDTH = 0.7f
+        var LABELS_COLOR = Color.Black
+        var FONT_SIZE = 12.sp
+        var FONT_WEIGHT = FontWeight.Medium
     }
 
     var plane: Plane? = null
     var textMeasurer: TextMeasurer? = null
+    var step: Double = 1.0
 
     override fun paint(scope: DrawScope) {
         plane?.let{
-            val stepY = Stepic.getStepInnovation(it.deltaY)
-            val stepX = Stepic.getStepInnovation(it.deltaX)
-            if(showGrid) drawGrid(scope,5.0,stepX,stepY)
+            val stepY = Stepic.getStepInnovation(abs(it.yMax-it.yMin))
+            val stepX = Stepic.getStepInnovation(abs(it.xMax-it.xMin))
+            step = if(abs(it.yMax-it.yMin) > abs(it.xMax-it.xMin) ) stepY else stepX
+//            println("delta: ${ abs(it.xMax-it.xMin)} ${abs(it.yMax-it.yMin)}")
+//            println("Шаг :$stepX $stepY")
+            if(showGrid) drawGrid(scope, step, step)
             paintAxis(scope)
-            paintLabels(scope,stepX,stepY)
+            paintLabels(scope,step,step)
         }
     }
 
@@ -94,7 +89,7 @@ open class CartesianPainter(val showGrid: Boolean) : Painter {
         }
     }
 
-    private fun drawGrid(scope: DrawScope, inStep:Double,stepX:Double,stepY:Double) {
+    private fun drawGrid(scope: DrawScope, stepX: Double, stepY: Double) {
         plane?.let {
             var x = Stepic.getLowerLim(it.xMin,stepX)
             while (x < it.xMax){
