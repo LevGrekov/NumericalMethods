@@ -2,21 +2,19 @@ package drawing.painters
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.DrawScope
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
-import org.jetbrains.skia.Font
-import org.jetbrains.skia.Paint
 import drawing.convertation.Converter
 import drawing.convertation.Plane
-import drawing.convertation.Stepic
 import math.neq
 import java.text.DecimalFormat
 import kotlin.math.abs
+import kotlin.math.floor
+import kotlin.math.pow
 
 @OptIn(ExperimentalTextApi::class)
 open class CartesianPainter(val showGrid: Boolean) : Painter {
@@ -35,10 +33,29 @@ open class CartesianPainter(val showGrid: Boolean) : Painter {
     var textMeasurer: TextMeasurer? = null
     var step: Double = 1.0
 
+    fun getLowerLim(xMin: Double, step: Double) : Double {
+        val ll = step * floor(xMin / step)
+        return  if(ll>xMin) ll else ll+step
+    }
+    fun getStepInnovation(delta: Double,firstEnter: Double = 28.0) : Double{
+        val sgn = if((delta/firstEnter).toInt() > 0) 1.0 else -1.0
+        var i = 0.0
+        while(i!=sgn*100){
+            if(delta/firstEnter in (2.0.pow(i - 1.0) * 5.0.pow(i)) .. (2.0.pow(i) * 5.0.pow(i)))
+                return 2.0 * 10.0.pow(i)
+            if(delta/firstEnter in (2.0.pow(i) * 5.0.pow(i)) .. (2.0.pow(i+1) * 5.0.pow(i)))
+                return 5.0 * 10.0.pow(i)
+            if(delta/firstEnter in (2.0.pow(i+1) * 5.0.pow(i)) .. (2.0.pow(i) * 5.0.pow(i+1)))
+                return 10.0 * 10.0.pow(i)
+            i+=sgn
+        }
+        return delta
+    }
+
     override fun paint(scope: DrawScope) {
         plane?.let{
-            val stepY = Stepic.getStepInnovation(abs(it.yMax-it.yMin))
-            val stepX = Stepic.getStepInnovation(abs(it.xMax-it.xMin))
+            val stepY = getStepInnovation(abs(it.yMax-it.yMin))
+            val stepX = getStepInnovation(abs(it.xMax-it.xMin))
             step = if(abs(it.yMax-it.yMin) > abs(it.xMax-it.xMin) ) stepY else stepX
 //            println("delta: ${ abs(it.xMax-it.xMin)} ${abs(it.yMax-it.yMin)}")
 //            println("Шаг :$stepX $stepY")
@@ -51,8 +68,8 @@ open class CartesianPainter(val showGrid: Boolean) : Painter {
     private fun paintLabels(scope: DrawScope,stepX: Double,stepY: Double) {
 
         plane?.let {
-            var x = Stepic.getLowerLim(it.xMin,stepX)
-            var y = Stepic.getLowerLim(it.yMin,stepY)
+            var x = getLowerLim(it.xMin,stepX)
+            var y = getLowerLim(it.yMin,stepY)
 
             while (x < it.xMax){
                 if(x neq 0.0){
@@ -91,7 +108,7 @@ open class CartesianPainter(val showGrid: Boolean) : Painter {
 
     private fun drawGrid(scope: DrawScope, stepX: Double, stepY: Double) {
         plane?.let {
-            var x = Stepic.getLowerLim(it.xMin,stepX)
+            var x = getLowerLim(it.xMin,stepX)
             while (x < it.xMax){
                 val xPos = Converter.xCrt2Scr(x, it)
                 scope.apply {
@@ -105,7 +122,7 @@ open class CartesianPainter(val showGrid: Boolean) : Painter {
                 x+=stepX
             }
 
-            var y = Stepic.getLowerLim(it.yMin,stepY)
+            var y = getLowerLim(it.yMin,stepY)
             while (y < it.yMax){
                 val yPos = Converter.yCrt2Scr(y, it)
                 scope.apply {

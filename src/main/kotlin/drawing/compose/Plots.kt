@@ -34,8 +34,8 @@ fun showPlot(
     yMax:Double = 20.0
 ) {
     var funksShows by remember { mutableStateOf(painters.map{it.show}) }
-
     var scale by remember { mutableStateOf(1f) }
+    val scaleFactor = 1.2f
     var offset by remember { mutableStateOf(Offset.Zero) }
 
     val transformState = rememberTransformableState { zoomChange, offsetChange, _ ->
@@ -62,18 +62,19 @@ fun showPlot(
                     .background(Color.White)
                     .transformable(transformState)
                     .onPointerEvent(PointerEventType.Scroll) {
-                        scale += it.changes.first().scrollDelta.y
+                        val value = (it.changes.first().scrollDelta.y) * scaleFactor
+                        var trueScale = maxOf(value, 1f/ abs(value)).toDouble()
+                        if(value == 0f) trueScale = 10e-5
+                        scale *= trueScale.toFloat()
                     },
                 ) {
                     cartesianPainter.plane?.let {
                         it.width = size.width
                         it.height = size.height
-                        var trueScale = maxOf(scale, 1f/ abs(scale)).toDouble()
-                        if(scale == 0f) trueScale = 1.0
-                        it.xMin = (xMin - offset.x/10.0) * trueScale
-                        it.xMax = (xMax - offset.x/10.0) * trueScale
-                        it.yMin = (yMin + offset.y/10.0) * trueScale
-                        it.yMax = (yMax + offset.y/10.0) * trueScale
+                        it.xMin = (xMin - offset.x/10.0) * scale
+                        it.xMax = (xMax - offset.x/10.0) * scale
+                        it.yMin = (yMin + offset.y/10.0) * scale
+                        it.yMax = (yMax + offset.y/10.0) * scale
                     }
                     cartesianPainter.paint(this)
                     println(offset)
