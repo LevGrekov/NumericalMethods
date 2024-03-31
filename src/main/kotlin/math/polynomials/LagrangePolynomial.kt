@@ -2,6 +2,8 @@ package math.polynomials
 
 import math.neq
 
+
+
 class LagrangePolynomial(points: Map<Double,Double>) : Polynomial() {
     private val _points: MutableMap<Double, Double>
     init {
@@ -17,6 +19,13 @@ class LagrangePolynomial(points: Map<Double,Double>) : Polynomial() {
 
     private fun createLagrangePoly(): Polynomial = _points.entries.fold(Polynomial(mapOf(0 to 0.0))) {result, (x,fx) -> result + createFundamentalPoly(_points.keys.toList(),x) * fx}
 
+    fun findW() : Polynomial {
+        val result = Polynomial(1.0)
+        points.keys.forEach {
+            result *= Polynomial(-it, 1.0)
+        }
+        return result
+    }
 
     companion object{
         fun createFundamentalPoly(points:List<Double>,xk: Double): Polynomial =

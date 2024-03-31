@@ -1,9 +1,7 @@
 package math
 
-import kotlin.math.abs
-import kotlin.math.max
-import kotlin.math.min
-import kotlin.math.ulp
+import math.complex.ComplexNum
+import kotlin.math.*
 
 fun Double.eq(other: Double, eps: Double) = abs(this - other) < eps
 
@@ -53,3 +51,9 @@ fun sgn(x: Double): Double {
         else -> 1.0
     }
 }
+
+fun sign(z:ComplexNum): ComplexNum = z.sign()
+
+fun posSqrt(z:ComplexNum): ComplexNum = ComplexNum(sqrt(z.abs())*cos(z.arg()/2.0),sqrt(z.abs()) * sin(z.arg()/2.0))
+
+fun abs(z:ComplexNum): Double = sqrt(z.re * z.re + z.im * z.im)

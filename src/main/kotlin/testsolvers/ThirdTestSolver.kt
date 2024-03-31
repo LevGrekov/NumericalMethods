@@ -1,4 +1,4 @@
-package TestsSolvers
+package testsolvers
 
 import math.NumericIntegral
 

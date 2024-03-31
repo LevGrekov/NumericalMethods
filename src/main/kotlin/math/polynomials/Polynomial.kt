@@ -6,7 +6,7 @@ import math.neq
 import kotlin.math.abs
 import kotlin.math.pow
 
-open class Polynomial(coeffs: Map<Int, Double>) {
+open class Polynomial(coeffs: Map<Int, Double>)  {
     protected val _coeffs: MutableMap<Int, Double> = mutableMapOf()
 
     init {

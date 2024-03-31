@@ -1,4 +1,4 @@
-package TestsSolvers
+package testsolvers
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
@@ -14,8 +14,6 @@ import math.splines.SplineCalculationMethod
 import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.random.Random
-import kotlin.system.measureNanoTime
-import kotlin.system.measureTimeMillis
 
 object SecondTestSolver {
     private fun getPoints(
