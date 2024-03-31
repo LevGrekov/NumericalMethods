@@ -1,16 +1,22 @@
 package math.complex
 
-class ComplexMatrix(val rows: Int, val cols: Int, private val data: Array<Array<ComplexNum>>) {
+open class ComplexMatrix(protected val _data: Array<Array<ComplexNum>>) {
+    constructor(rows: Int, cols: Int) : this(Array(rows) { Array(cols) { ComplexNum() } })
 
-    val determinant: ComplexNum? by lazy { determinantRecursive() }
-    constructor(rows: Int, cols: Int) : this(rows, cols, Array(rows) { Array<ComplexNum>(cols) { ComplexNum() } })
+    val data get() = _data
+
+    val rows: Int
+        get() = _data.size
+
+    val cols: Int
+        get() = if (_data.isNotEmpty()) _data[0].size else 0
 
     operator fun get(i: Int, j: Int): ComplexNum {
-        return data[i][j]
+        return _data[i][j]
     }
 
     operator fun set(i: Int, j: Int, value: ComplexNum) {
-        data[i][j] = value
+        _data[i][j] = value
     }
 
     operator fun plus(other: ComplexMatrix): ComplexMatrix {
@@ -80,39 +86,6 @@ class ComplexMatrix(val rows: Int, val cols: Int, private val data: Array<Array<
         return result
     }
 
-    fun invertibleMatrix(): ComplexMatrix {
-        if (determinant == ComplexNum(0.0,0.0)) throw Exception("Матрица с Определителем = 0 необратима")
-        val result = ComplexMatrix(rows,rows)
-        for (i in 0 until rows) {
-            for (j in 0 until cols) {
-                val sign = if ((i + j) % 2.0 == 1.0) -1.0 else 1.0
-                result[i, j] = getMinor(j,i).determinantRecursive()!!/determinant!! * sign
-            }
-        }
-        return result.transpose()
-    }
-
-
-    private fun determinantRecursive(): ComplexNum? {
-        if (this.rows != this.cols) return null
-        if (this.rows == 1) {
-            return this[0,0]
-        }
-
-        if (this.rows == 2) {
-            return this[0,0] * this[1,1] - this[0,1] * this[1,0]
-        }
-
-        val det = ComplexNum()
-        for (j in 0 until this.cols) {
-            val minor = this.getMinor(0, j)
-            val sign = if (j % 2 == 0) 1.0 else -1.0
-            det += this[0,j] * minor.determinantRecursive()!! * sign
-        }
-        return det
-    }
-
-
     fun getMinor(row: Int, col: Int): ComplexMatrix {
         val minorData = Array(rows - 1) { Array(cols - 1) { ComplexNum() } }
         var minorRow = 0
@@ -121,12 +94,12 @@ class ComplexMatrix(val rows: Int, val cols: Int, private val data: Array<Array<
             var minorCol = 0
             for (j in 0 until cols) {
                 if (j == col) continue
-                minorData[minorRow][minorCol] = data[i][j]
+                minorData[minorRow][minorCol] = _data[i][j]
                 minorCol++
             }
             minorRow++
         }
-        return ComplexMatrix(rows - 1, cols - 1, minorData)
+        return ComplexMatrix(minorData)
     }
 
     override fun toString(): String {

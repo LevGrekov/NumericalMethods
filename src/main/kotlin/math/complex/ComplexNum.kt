@@ -1,8 +1,9 @@
 package math.complex
 
+import math.eq
 import kotlin.math.*
 
-class ComplexNum(var re: Double = 0.0, var im: Double = 0.0) : Number() {
+class ComplexNum(var re: Double = 0.0, var im: Double = 0.0)  {
 
     fun arg(): Double {
         if (re == 0.0 && im == 0.0) return Double.NaN // Нет угла, если комплексное число нулевое
@@ -68,18 +69,14 @@ class ComplexNum(var re: Double = 0.0, var im: Double = 0.0) : Number() {
     fun sign(): ComplexNum = this/this.abs()
 
     fun sqrt() = ComplexNum(this.abs() * cos(this.arg()) )
+    fun toDouble(): Double? = if(im eq 0.0 ) re else null
 
-    override fun toByte(): Byte = throw UnsupportedOperationException("Cannot convert complex number to Byte.")
+    infix fun eq(other: ComplexNum) =
+        abs(re - other.re) < max(re.ulp, other.re.ulp) * 10.0 &&
+        abs(im - other.im) < max(im.ulp, other.im.ulp) * 10.0
+    infix fun neq(other: ComplexNum) = !this.eq(other)
 
-    override fun toChar(): Char = throw UnsupportedOperationException("Cannot convert complex number to Char.")
+    val Double.i: ComplexNum
+        get() = ComplexNum(0.0, this)
 
-    override fun toDouble() = re
-
-    override fun toFloat(): Float = re.toFloat()
-
-    override fun toInt(): Int = re.toInt()
-
-    override fun toLong(): Long = re.toLong()
-
-    override fun toShort(): Short = throw UnsupportedOperationException("Cannot convert complex number to Short.")
 }
