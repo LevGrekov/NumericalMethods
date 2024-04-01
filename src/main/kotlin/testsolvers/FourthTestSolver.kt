@@ -31,6 +31,7 @@ object FourthTestSolver {
         )
         val newVars = a.transformToIterativeForm(matrixA,constants,tau,C)
         println(a.solveSeidel(SqComplexMatrix(newVars.first), ComplexMatrix(newVars.second.data).transpose()))
+        println(newVars.second)
     }
 
 }

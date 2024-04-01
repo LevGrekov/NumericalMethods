@@ -41,9 +41,9 @@ class SqComplexMatrix : ComplexMatrix {
         return det
     }
 
-    fun invertibleMatrix(): SqComplexMatrix {
+    fun invertibleMatrix(): ComplexMatrix {
         if (determinant == ComplexNum(0.0, 0.0)) throw Exception("Матрица с Определителем = 0 необратима")
-        val result = SqComplexMatrix(rows)
+        val result = ComplexMatrix(rows, rows)
         for (i in 0 until rows) {
             for (j in 0 until cols) {
                 val sign = if ((i + j) % 2.0 == 1.0) -1.0 else 1.0
@@ -51,7 +51,7 @@ class SqComplexMatrix : ComplexMatrix {
                 result[i, j] = minor.determinantRecursive() / determinant!! * sign
             }
         }
-        return SqComplexMatrix(result.transpose())
+        return result
     }
 
     fun norm(inf:Boolean = false): Double {

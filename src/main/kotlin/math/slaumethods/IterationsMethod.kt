@@ -19,12 +19,12 @@ class IterationsMethod {
             k++
         }
         println(k)
-        println(B.norm())
+        println(B.norm(true))
 
         return xnew
     }
     fun transformToIterativeForm(A: SqComplexMatrix, b: ComplexMatrix,tau:Double,C:SqComplexMatrix) =
-        Pair(SqComplexMatrix.identity(A.size) - C * A * tau,C*(b.transpose())*tau)
+        Pair(SqComplexMatrix.identity(A.size) - (C * tau) * A,C*(b.transpose())*tau)
 
 
     fun splitMatrix(B: SqComplexMatrix): Pair<SqComplexMatrix, SqComplexMatrix> {
@@ -41,7 +41,6 @@ class IterationsMethod {
                 }
             }
         }
-        println("yufgsediugiedf$\n")
         return Pair(H, F)
     }
     fun solveSeidel(B: SqComplexMatrix,c: ComplexMatrix,tolerance : Double = 1e-3): ComplexMatrix{
@@ -49,7 +48,6 @@ class IterationsMethod {
         val EminHinv = SqComplexMatrix(SqComplexMatrix.identity(B.size) - H).invertibleMatrix()
         val BTilda = EminHinv * F
         val cTilda = (EminHinv * c.transpose()).transpose()
-        println("BTILDA\n$BTilda")
-        return solve(BTilda,cTilda,tolerance)
+        return solve(SqComplexMatrix(BTilda),cTilda,tolerance)
     }
 }
