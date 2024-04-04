@@ -1,6 +1,6 @@
 package math
 
-import math.complex.ComplexNum
+import math.complex.Complex
 import kotlin.math.*
 
 fun Double.eq(other: Double, eps: Double) = abs(this - other) < eps
@@ -55,8 +55,8 @@ fun sgn(x: Double): Double {
     }
 }
 
-fun sign(z:ComplexNum): ComplexNum = z.sign()
+fun sign(z:Complex): Complex = z.sign()
 
-fun posSqrt(z:ComplexNum): ComplexNum = ComplexNum(sqrt(z.abs())*cos(z.arg()/2.0),sqrt(z.abs()) * sin(z.arg()/2.0))
+fun posSqrt(z:Complex): Complex = Complex(sqrt(z.abs())*cos(z.arg()/2.0),sqrt(z.abs()) * sin(z.arg()/2.0))
 
-fun abs(z:ComplexNum): Double = sqrt(z.re * z.re + z.im * z.im)
+fun abs(z:Complex): Double = sqrt(z.re * z.re + z.im * z.im)

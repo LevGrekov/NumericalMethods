@@ -5,34 +5,31 @@ class SqComplexMatrix : ComplexMatrix {
         fun identity(size: Int): SqComplexMatrix = SqComplexMatrix(
             Array(size) { i ->
                 Array(size) { j ->
-                    if (i == j) ComplexNum(1.0, 0.0) else ComplexNum(0.0, 0.0)
+                    if (i == j) Complex(1.0, 0.0) else Complex(0.0, 0.0)
                 }
             }
         )
     }
-    constructor(data: Array<Array<ComplexNum>>) : super(data) {
+    val determinant: Complex by lazy { determinantRecursive() }
+    val Inv by lazy { invertibleMatrix() }
+    val sizE by lazy { identity(size) }
+    val size: Int
+        get() = rows
+    constructor(data: Array<Array<Complex>>) : super(data) {
         require(data.isNotEmpty() && data.all { it.size == data.size }) {
             "Двумерный массив должен быть квадратным"
         }
     }
-
     constructor(data: ComplexMatrix) : this(data.data.clone())
-
 
     constructor(size: Int) : super(size, size)
 
-
-    val size: Int
-        get() = rows
-
-
-    val determinant: ComplexNum? by lazy { determinantRecursive() }
-    private fun determinantRecursive(): ComplexNum {
+    private fun determinantRecursive(): Complex {
         if (this.rows == 2) {
             return this[0, 0] * this[1, 1] - this[0, 1] * this[1, 0]
         }
 
-        val det = ComplexNum()
+        val det = Complex()
         for (j in 0 until this.cols) {
             val minor = SqComplexMatrix(getMinor(0, j))
             val sign = if (j % 2 == 0) 1.0 else -1.0
@@ -41,9 +38,9 @@ class SqComplexMatrix : ComplexMatrix {
         return det
     }
 
-    fun invertibleMatrix(): ComplexMatrix {
-        if (determinant == ComplexNum(0.0, 0.0)) throw Exception("Матрица с Определителем = 0 необратима")
-        val result = ComplexMatrix(rows, rows)
+    fun invertibleMatrix(): SqComplexMatrix {
+        if (determinant == Complex(0.0, 0.0)) throw Exception("Матрица с Определителем = 0 необратима")
+        val result = SqComplexMatrix(rows)
         for (i in 0 until rows) {
             for (j in 0 until cols) {
                 val sign = if ((i + j) % 2.0 == 1.0) -1.0 else 1.0
@@ -53,6 +50,10 @@ class SqComplexMatrix : ComplexMatrix {
         }
         return result
     }
+
+
+    fun calculateTrace(): Complex =
+        (0 until size).fold(Complex()) { acc, i -> acc + this[i,i] }
 
     fun norm(inf:Boolean = false): Double {
         var maxSum = 0.0
@@ -69,4 +70,7 @@ class SqComplexMatrix : ComplexMatrix {
     }
 
     operator fun times(other: SqComplexMatrix) = SqComplexMatrix(super.times(other))
+    operator fun plus(other: SqComplexMatrix) = SqComplexMatrix(super.plus(other))
+    operator fun minus(other: SqComplexMatrix) = SqComplexMatrix(super.minus(other))
+    override operator fun unaryMinus() = SqComplexMatrix(super.unaryMinus())
 }

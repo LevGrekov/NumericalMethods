@@ -1,14 +1,14 @@
 package math.slaumethods
 
 import math.complex.ComplexMatrix
-import math.complex.ComplexNum
+import math.complex.Complex
 import kotlin.math.sqrt
 
 fun residual(A: ComplexMatrix, b: ComplexMatrix, x: ComplexMatrix): ComplexMatrix {
     val n = b.rows
     val residual = ComplexMatrix(n, 1)
     for (i in 0 until n) {
-        val sum = ComplexNum(0.0, 0.0)
+        val sum = Complex(0.0, 0.0)
         for (j in 0 until n) {
             sum += A[i, j] * x[j, 0]
         }
@@ -16,7 +16,7 @@ fun residual(A: ComplexMatrix, b: ComplexMatrix, x: ComplexMatrix): ComplexMatri
     }
     return residual
 }
-fun complexVectorNorm(vector: Array<ComplexNum>): Double {
+fun complexVectorNorm(vector: Array<Complex>): Double {
     var sum = 0.0
     for (i in vector.indices) {
         val modulus = vector[i].abs2()
@@ -24,4 +24,4 @@ fun complexVectorNorm(vector: Array<ComplexNum>): Double {
     }
     return sqrt(sum)
 }
-private infix fun Double.c(d: Double): ComplexNum = ComplexNum(this,d)
+private infix fun Double.c(d: Double): Complex = Complex(this,d)
