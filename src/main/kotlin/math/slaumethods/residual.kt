@@ -16,10 +16,11 @@ fun residual(A: ComplexMatrix, b: ComplexMatrix, x: ComplexMatrix): ComplexMatri
     }
     return residual
 }
-fun complexVectorNorm(vector: Array<Complex>): Double {
+fun complexVectorNorm(vector: ComplexMatrix): Double {
+    if(vector.cols != 1) throw Exception("В complexVectorNorm попала Строка ")
     var sum = 0.0
-    for (i in vector.indices) {
-        val modulus = vector[i].abs2()
+    for (i in vector.data[0].indices) {
+        val modulus = vector[i,0].abs2()
         sum += modulus
     }
     return sqrt(sum)

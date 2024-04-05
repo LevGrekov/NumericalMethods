@@ -1,4 +1,0 @@
-package math
-
-class Matrix {
-}

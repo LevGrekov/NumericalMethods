@@ -3,14 +3,15 @@ package math.slaumethods
 import math.complex.ComplexMatrix
 import math.complex.Complex
 import math.complex.SqComplexMatrix
+import math.neq
 import kotlin.math.abs
 import kotlin.math.sign
 import kotlin.math.sqrt
 
 class SquareRootMethodSLAU(val A: SqComplexMatrix, val b: ComplexMatrix) {
 
-    private val s = SqComplexMatrix(A.size)
-    private val d = SqComplexMatrix(A.size)
+    private val S = SqComplexMatrix(A.size)
+    private val D = SqComplexMatrix(A.size)
 
 
     private fun findD(i:Int): Double = when{
@@ -20,31 +21,37 @@ class SquareRootMethodSLAU(val A: SqComplexMatrix, val b: ComplexMatrix) {
     }
 
     private fun findS(i:Int, j:Int): Complex = when {
-        i == 0 && j == 0 -> Complex(sqrt(A[0,0].re/d[0,0].re))
-        i == 0 && j != 0 -> (A[0,j]/(findS(0,0)*d[0,0].re))
-        i == j -> Complex(sqrt(abs(A[i, i].re - (0 until i).sumOf { k -> s[k,i].abs2() * d[k,k].re })),0.0)
+        i == 0 && j == 0 -> Complex(sqrt(A[0,0].re/D[0,0].re))
+        i == 0 && j != 0 -> (A[0,j]/(findS(0,0)*D[0,0].re))
+        i == j -> Complex(sqrt(abs(A[i, i].re - (0 until i).sumOf { k -> S[k,i].abs2() * D[k,k].re })),0.0)
         i < j -> {
             val sum = Complex(0.0,0.0)
             for (k in 0 until i) {
-                val a = !s[k,i] * s[k,j] * d[k,k].re
+                val a = !S[k,i] * S[k,j] * D[k,k].re
                 sum += a
             }
-            (A[i,j] - sum)/(s[i,i] * d[0,0].re)
+            (A[i,j] - sum)/(S[i,i] * D[0,0].re)
         }
         else -> Complex(0.0,0.0)
     }
 
     fun solve(): ComplexMatrix{
+        if(!A.isSymmetric()){
+            throw Exception("Метод Квадратных Корней. Матрица не симметрична")
+        }
         for (i in 0 until A.rows) {
-            d[i,i] = Complex(findD(i),0.0)
-            for (j in 0 until A.cols) {
-                s[i,j] = findS(i,j)
+            if(A[i,i].im neq 0.0){
+                throw Exception("Метод Квадратных Корней. Матрица должна иметь на главной диагонале только действительные числа")
             }
         }
-        val X = b * SqComplexMatrix(( s.conj() * d )).invertibleMatrix() * s.invertibleMatrix()
-        val y = s.conj() * d
-        val a = s.conj() * d * s
+        for (i in 0 until A.rows) {
+            D[i,i] = Complex(findD(i),0.0)
+            for (j in 0 until A.cols) {
+                S[i,j] = findS(i,j)
+            }
+        }
+
+        val X =  (S.H*D*S).Inv * b
         return X
     }
-
 }

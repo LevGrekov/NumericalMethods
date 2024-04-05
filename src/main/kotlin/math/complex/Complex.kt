@@ -44,10 +44,10 @@ class Complex(var re: Double = 0.0, var im: Double = 0.0)  {
 
     override fun toString() = buildString {
         append("(")
-        if ((re != 0.0) || (im == 0.0)) append("%.4f".format(re))
+        if ((re != 0.0) || (im == 0.0)) append("%.7f".format(re))
         if(im != 0.0) {
             append(if(im < 0.0) "-" else if(re != 0.0) "+" else "")
-            val formattedIm = if(im.absoluteValue != 1.0) "%.4f".format(im.absoluteValue) else ""
+            val formattedIm = if(im.absoluteValue != 1.0) "%.7f".format(im.absoluteValue) else ""
             append(formattedIm)
             append("i")
         }

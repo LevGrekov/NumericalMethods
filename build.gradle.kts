@@ -16,6 +16,7 @@ repositories {
 
 dependencies {
     implementation(compose.desktop.currentOs)
+    implementation ("io.github.microutils:kotlin-logging-jvm:2.0.11")
 }
 
 compose.desktop {

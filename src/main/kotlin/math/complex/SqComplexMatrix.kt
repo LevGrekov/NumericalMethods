@@ -1,5 +1,7 @@
 package math.complex
 
+import math.abs
+
 class SqComplexMatrix : ComplexMatrix {
     companion object{
         fun identity(size: Int): SqComplexMatrix = SqComplexMatrix(
@@ -12,7 +14,9 @@ class SqComplexMatrix : ComplexMatrix {
     }
     val determinant: Complex by lazy { determinantRecursive() }
     val Inv by lazy { invertibleMatrix() }
-    val sizE by lazy { identity(size) }
+    override val T by lazy { SqComplexMatrix(super.T) }
+    override val H by lazy { SqComplexMatrix(super.H) }
+    val E by lazy { identity(size) }
     val size: Int
         get() = rows
     constructor(data: Array<Array<Complex>>) : super(data) {
@@ -45,7 +49,7 @@ class SqComplexMatrix : ComplexMatrix {
             for (j in 0 until cols) {
                 val sign = if ((i + j) % 2.0 == 1.0) -1.0 else 1.0
                 val minor = SqComplexMatrix(getMinor(j, i))
-                result[i, j] = minor.determinantRecursive() / determinant!! * sign
+                result[i, j] = minor.determinantRecursive() / determinant * sign
             }
         }
         return result
@@ -69,7 +73,34 @@ class SqComplexMatrix : ComplexMatrix {
         return maxSum
     }
 
+    fun isSymmetric(): Boolean {
+        val n = size
+        for (i in 0 until n) {
+            for (j in 0 until i) {
+                if (this[i,j] neq this[j,i]) {
+                    return false
+                }
+            }
+        }
+        return true
+    }
+    fun isDiagonallyDominant(): Boolean {
+        for (i in 0 until size) {
+            var diagonalSum = 0.0
+            for (j in 0 until size) {
+                if (i != j) {
+                    diagonalSum += abs(this[i,j])
+                }
+            }
+            if (abs(this[i,i]) <= diagonalSum) {
+                return false
+            }
+        }
+        return true
+    }
+
     operator fun times(other: SqComplexMatrix) = SqComplexMatrix(super.times(other))
+    override operator fun times(scalar:Double) = SqComplexMatrix(super.times(scalar))
     operator fun plus(other: SqComplexMatrix) = SqComplexMatrix(super.plus(other))
     operator fun minus(other: SqComplexMatrix) = SqComplexMatrix(super.minus(other))
     override operator fun unaryMinus() = SqComplexMatrix(super.unaryMinus())

@@ -1,9 +1,12 @@
 package math.complex
 
+import kotlin.random.Random
+
 open class ComplexMatrix(protected val _data: Array<Array<Complex>>) {
     constructor(rows: Int, cols: Int) : this(Array(rows) { Array(cols) { Complex() } })
-    val T by lazy { this.transpose() }
-    val H by lazy { this.conj() }
+    constructor(data: ComplexMatrix) : this(data.data.clone())
+    open val T by lazy { this.transpose() }
+    open val H by lazy { this.conj() }
     val data get() = _data
 
     val rows: Int
@@ -30,10 +33,15 @@ open class ComplexMatrix(protected val _data: Array<Array<Complex>>) {
         return sum
     }
 
-    fun getArray(): Array<Complex>? =
+    fun getArray(): Array<Complex>{
         if (rows == 1 || cols == 1) {
-            Array(_data.size) { rowIndex -> _data[rowIndex][0] }
-        } else null
+           return Array(_data.size) { rowIndex -> _data[rowIndex][0] }
+        }
+        else throw Exception("Невозможно преобразовать матрицу в массив")
+    }
+
+
+
 
     fun swapRows(row1: Int, row2: Int) {
         val tempRow = _data[row1]
@@ -76,6 +84,14 @@ open class ComplexMatrix(protected val _data: Array<Array<Complex>>) {
         return ComplexMatrix(minorData)
     }
 
+    fun fillRandomDouble(from:Double, until:Double) {
+        for (i in 0 until rows) {
+            for (j in 0 until cols) {
+                this[i,j] = Complex(Random.nextDouble(from, until))
+            }
+        }
+    }
+
     operator fun plus(other: ComplexMatrix): ComplexMatrix {
         require(rows == other.rows && cols == other.cols) { "Matrices must have the same dimensions" }
         val result = ComplexMatrix(rows, cols)
@@ -98,7 +114,7 @@ open class ComplexMatrix(protected val _data: Array<Array<Complex>>) {
         return result
     }
 
-    operator fun times(scalar: Double): ComplexMatrix {
+    open operator fun times(scalar: Double): ComplexMatrix {
         val result = ComplexMatrix(rows, cols)
         for (i in 0 until rows) {
             for (j in 0 until cols) {

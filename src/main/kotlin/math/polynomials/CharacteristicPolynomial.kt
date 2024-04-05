@@ -21,7 +21,7 @@ class CharacteristicPolynomial {
     val coefficients: MutableList<Complex> = mutableListOf()
 
     // Создаем единичную матрицу нужного размера
-    val identity = matrixC.sizE
+    val identity = matrixC.E
 
     fun solve(){
 
