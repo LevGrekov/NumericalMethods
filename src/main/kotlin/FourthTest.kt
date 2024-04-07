@@ -1,7 +1,35 @@
 import math.complex.Complex
+import math.complex.ComplexMatrix
 import math.complex.SqComplexMatrix
 import math.slaumethods.SLAU
-import testsolvers.FourthTestSolver
+import utils.FileWriter
+import kotlin.random.Random
+
+fun hellishSelectionAlgorithm2(A: SqComplexMatrix,randomAbsRange:Double):Pair<SqComplexMatrix,Double>{
+    var C = SqComplexMatrix(A.size)
+    var tau = 1.0
+    while ((A.E - (C * tau) * A).norm() >= 1){
+        C.fillRandomDouble(-randomAbsRange,randomAbsRange)
+        C += A.Inv
+        tau = Random.nextDouble(-randomAbsRange,randomAbsRange)
+    }
+    return Pair(C,tau)
+}
+fun hellishSelectionAlgorithm(A: SqComplexMatrix,randomAbsRange:Double):SqComplexMatrix{
+
+    var Cz = SqComplexMatrix(A.size)
+    var tau = 1.0
+    var B = SqComplexMatrix(A.size)
+    var C = SqComplexMatrix(A.size)
+    do{
+        Cz.fillRandomDouble(-randomAbsRange,randomAbsRange)
+        tau = Random.nextDouble(-randomAbsRange,randomAbsRange)
+        Cz += A.Inv * tau
+        B = SLAU.copyElementsFromMatrix(Cz*A) { i, j -> i >= j }
+        C = SLAU.copyElementsFromMatrix(Cz*A) { i, j -> i < j }
+    } while ((-B.Inv*C).norm() >= 1 || (Cz*A).determinant eq Complex())
+    return Cz
+}
 
 
 fun main(){
@@ -13,9 +41,7 @@ fun main(){
                 arrayOf(Complex(-1.23), Complex(1.64), Complex(-0.55))
             )
         ),
-        arrayOf(
-            Complex(0.83), Complex(-1.12), Complex(0.47)
-        )
+        ComplexMatrix(arrayOf(arrayOf(Complex(0.83), Complex(-1.12), Complex(0.47)))).T
     )
     val second = SLAU(
         SqComplexMatrix(
@@ -26,16 +52,9 @@ fun main(){
                 arrayOf(Complex(0.11), Complex(0.0), Complex(0.03), Complex(0.58))
             )
         ),
-        arrayOf(Complex(-1.2), Complex(0.81), Complex(-0.92), Complex(0.17))
+       ComplexMatrix(arrayOf(arrayOf(Complex(-1.2), Complex(0.81), Complex(-0.92), Complex(0.17)))).T
     )
-    val tau = 1.0
-    val C = SqComplexMatrix(
-        arrayOf(
-            arrayOf(Complex(),Complex(0.1), Complex(0.1)),
-            arrayOf(Complex(0.1), Complex(-0.1), Complex(0.0)),
-            arrayOf(Complex(0.2), Complex(-0.2),Complex(0.2))
-        )
-    )
+
     val third = SLAU(
         SqComplexMatrix(
             arrayOf(
@@ -44,7 +63,7 @@ fun main(){
                 arrayOf(Complex(2.4), Complex(-4.5), Complex(3.5)),
             )
         ),
-        arrayOf(Complex(5.2), Complex(3.8), Complex(-0.6))
+       ComplexMatrix(arrayOf(arrayOf(Complex(5.2), Complex(3.8), Complex(-0.6)))).T
     )
 
     val fourth = SLAU(
@@ -56,7 +75,8 @@ fun main(){
                 arrayOf(Complex(7.00), Complex(-0.17), Complex(-0.22), Complex(0.33))
             )
         ),
-        arrayOf(Complex(0.22), Complex(0.11), Complex(1.0), Complex(0.21))
+       ComplexMatrix(arrayOf(arrayOf(Complex(0.22), Complex(0.11), Complex(1.0), Complex(0.21)))).T,
+        tolerance = 1e-4
     )
 
     val fourthEq = SLAU(
@@ -68,28 +88,53 @@ fun main(){
                 arrayOf(Complex(-0.015600000000000003), Complex(3.999999999999837E-4), Complex(0.006000000000000005), Complex(-0.066)),
             )
         ),
-        arrayOf( Complex(0.21),Complex(0.22), Complex(1.0), Complex(0.6318),)
+       ComplexMatrix(arrayOf(arrayOf( Complex(0.21),Complex(0.22), Complex(1.0), Complex(0.6318)))).T,
+        tolerance = 1e-4
     )
 
+    FileWriter.also {
+        it.clear()
+        it.write("1) Метод Квадратных Корней")
+        it.write(first.solveSquareRootsMethod())
+        it.separate()
 
-    FourthTestSolver.apply {
-        solveFirst(first)
-        solveSecond(second)
-        val (C,tau) = hellishSelectionAlgorithm2(third.matrix,1.0)
-        solveThird(third,C,tau).also {
-            println(C)
-            println(tau)
-        }
-        val (C2,tau2) = hellishSelectionAlgorithm2(fourth.matrix,1.0)
-        solveFourth(fourth,C2,tau2).also {
-            println(C2)
-            println(tau2)
-        }
+        it.write("2) Метод Простых Итераций")
+        it.write(second.simpleIterations())
+        it.separate()
 
-        solveFifth(fourthEq).also {
-            println(C2)
-            println(tau2)
-        }
-        solveSixth(fourth,0.00313913, 50.6563)
+        it.write("3) Метод Зейделя")
+        val (C,tau) = hellishSelectionAlgorithm2(third._matrix,1.0)
+        it.write(third.solveSeidel(tau,C))
+        it.separate()
+
+        val gaussSolution = fourth.gaussianEliminationPartialPivoting()
+
+        it.write("4.1) Метод Простых Итераций")
+        val (C2,tau2) = hellishSelectionAlgorithm2(fourth._matrix,1.0)
+        val solution41 = fourth.simpleIterations(tau2,C2)
+        it.write(solution41)
+        it.write("AbsError: ${SLAU.findAbsError(gaussSolution,solution41)}")
+        it.write("residual: ${fourth.findResidual(solution41)}")
+        it.separate()
+
+        it.write("4.2) Метод Зейделя II")
+        val Cz = hellishSelectionAlgorithm(fourth._matrix,0.05)
+        val solution42 = fourth.solveSeidel2(Cz)
+        it.write(solution42)
+        it.write("AbsError: ${SLAU.findAbsError(gaussSolution,solution42)}")
+        it.write("residual: ${fourth.findResidual(solution42)}")
+        it.separate()
+
+        it.write("4.3) Градиентный Спуск")
+        val solution43 = fourth.gradientDescent(0.00313913, 50.6563)
+        it.write(solution43)
+        it.write("AbsError: ${SLAU.findAbsError(gaussSolution,solution43)}")
+        it.write("residual: ${fourth.findResidual(solution43)}")
+        it.separate()
+
+        it.write("4.5) Метод Гаусса с выбором ведущего элемента")
+        it.write("$gaussSolution")
+
+
     }
 }

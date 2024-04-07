@@ -2,26 +2,20 @@ package math.complex
 
 import kotlin.random.Random
 
-open class ComplexMatrix(protected val _data: Array<Array<Complex>>) {
+open class ComplexMatrix(private val _data: Array<Array<Complex>>) {
     constructor(rows: Int, cols: Int) : this(Array(rows) { Array(cols) { Complex() } })
-    constructor(data: ComplexMatrix) : this(data.data.clone())
+    constructor(matrix: ComplexMatrix) : this(matrix.data)
     open val T by lazy { this.transpose() }
     open val H by lazy { this.conj() }
-    val data get() = _data
-
+    operator fun get(i: Int, j: Int): Complex = _data[i][j]
+    operator fun set(i: Int, j: Int, value: Complex) { _data[i][j] = value}
     val rows: Int
         get() = _data.size
 
     val cols: Int
         get() = if (_data.isNotEmpty()) _data[0].size else 0
+    val data get() = _data
 
-    operator fun get(i: Int, j: Int): Complex {
-        return _data[i][j]
-    }
-
-    operator fun set(i: Int, j: Int, value: Complex) {
-        _data[i][j] = value
-    }
 
     fun sum(): Complex {
         var sum = Complex(0.0, 0.0)
@@ -154,6 +148,15 @@ open class ComplexMatrix(protected val _data: Array<Array<Complex>>) {
             builder.append("\n")
         }
         return builder.toString()
+    }
+
+    open fun copy(): ComplexMatrix {
+        val newData = Array(_data.size) { i ->
+            Array(_data[i].size) { j ->
+                _data[i][j].copy()
+            }
+        }
+        return ComplexMatrix(newData)
     }
 
 

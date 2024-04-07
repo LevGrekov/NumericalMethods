@@ -2,12 +2,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowState
 import androidx.compose.ui.window.application
-import math.complex.ComplexMatrix
-import math.complex.Complex
-import math.complex.SqComplexMatrix
-import math.polynomials.CharacteristicPolynomial
-import math.slaumethods.SLAU
-import testsolvers.FourthTestSolver
 
 fun main() = application {
     Window(
@@ -24,7 +18,6 @@ fun main() = application {
 //            1.0,
 //            -5.0 / 8.0, 5.0 / 7.0, 2.0 / 7.0
 //        )
-
     }
 }
 

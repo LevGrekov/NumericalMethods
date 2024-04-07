@@ -4,17 +4,20 @@ import math.eq
 import kotlin.math.*
 
 class Complex(var re: Double = 0.0, var im: Double = 0.0)  {
-
+    fun abs() = sqrt(re * re + im * im)
+    fun abs2() = re * re + im * im
     fun arg(): Double {
-        if (re == 0.0 && im == 0.0) return Double.NaN // Нет угла, если комплексное число нулевое
+        if (re == 0.0 && im == 0.0) return Double.NaN
         return atan2(im, re)
     }
 
     operator fun plus(other: Complex) : Complex = Complex(re + other.re, im + other.im)
-    operator fun plusAssign(other: Complex): Unit{
+    operator fun plusAssign(other: Complex){
         re += other.re
         im += other.im
     }
+
+
 
     operator fun minus(other: Complex) = Complex(re - other.re, im - other.im)
     operator fun minusAssign(other: Complex): Unit{
@@ -44,10 +47,10 @@ class Complex(var re: Double = 0.0, var im: Double = 0.0)  {
 
     override fun toString() = buildString {
         append("(")
-        if ((re != 0.0) || (im == 0.0)) append("%.7f".format(re))
+        if ((re != 0.0) || (im == 0.0)) append("%.10f".format(re))
         if(im != 0.0) {
             append(if(im < 0.0) "-" else if(re != 0.0) "+" else "")
-            val formattedIm = if(im.absoluteValue != 1.0) "%.7f".format(im.absoluteValue) else ""
+            val formattedIm = if(im.absoluteValue != 1.0) "%.10f".format(im.absoluteValue) else ""
             append(formattedIm)
             append("i")
         }
@@ -64,8 +67,6 @@ class Complex(var re: Double = 0.0, var im: Double = 0.0)  {
 
     operator fun not() = conj()
 
-    fun abs() = sqrt(re * re + im * im)
-    fun abs2() = re * re + im * im
     fun sign(): Complex = this/this.abs()
 
     fun sqrt() = Complex(this.abs() * cos(this.arg()) )
@@ -76,7 +77,17 @@ class Complex(var re: Double = 0.0, var im: Double = 0.0)  {
         abs(im - other.im) < max(im.ulp, other.im.ulp) * 10.0
     infix fun neq(other: Complex) = !this.eq(other)
 
-    val Double.i: Complex
-        get() = Complex(0.0, this)
+    fun copy() = Complex(re, im)
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is Complex) return false
+
+        if (re != other.re || im != other.im) return false
+
+        return true
+    }
+
+    // Переопределение hashCode для корректной работы с коллекциями
+    override fun hashCode() = re.hashCode() * 31 + im.hashCode() * 101
 
 }

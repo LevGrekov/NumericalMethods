@@ -50,7 +50,6 @@ class SquareRootMethodSLAU(val A: SqComplexMatrix, val b: ComplexMatrix) {
                 S[i,j] = findS(i,j)
             }
         }
-
         val X =  (S.H*D*S).Inv * b
         return X
     }

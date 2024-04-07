@@ -3,15 +3,6 @@ package math.complex
 import math.abs
 
 class SqComplexMatrix : ComplexMatrix {
-    companion object{
-        fun identity(size: Int): SqComplexMatrix = SqComplexMatrix(
-            Array(size) { i ->
-                Array(size) { j ->
-                    if (i == j) Complex(1.0, 0.0) else Complex(0.0, 0.0)
-                }
-            }
-        )
-    }
     val determinant: Complex by lazy { determinantRecursive() }
     val Inv by lazy { invertibleMatrix() }
     override val T by lazy { SqComplexMatrix(super.T) }
@@ -24,7 +15,7 @@ class SqComplexMatrix : ComplexMatrix {
             "Двумерный массив должен быть квадратным"
         }
     }
-    constructor(data: ComplexMatrix) : this(data.data.clone())
+    constructor(matrix: ComplexMatrix) : this(matrix.data)
 
     constructor(size: Int) : super(size, size)
 
@@ -42,7 +33,7 @@ class SqComplexMatrix : ComplexMatrix {
         return det
     }
 
-    fun invertibleMatrix(): SqComplexMatrix {
+    private fun invertibleMatrix(): SqComplexMatrix {
         if (determinant == Complex(0.0, 0.0)) throw Exception("Матрица с Определителем = 0 необратима")
         val result = SqComplexMatrix(rows)
         for (i in 0 until rows) {
@@ -54,7 +45,13 @@ class SqComplexMatrix : ComplexMatrix {
         }
         return result
     }
-
+    private fun identity(size: Int): SqComplexMatrix = SqComplexMatrix(
+        Array(size) { i ->
+            Array(size) { j ->
+                if (i == j) Complex(1.0, 0.0) else Complex(0.0, 0.0)
+            }
+        }
+    )
 
     fun calculateTrace(): Complex =
         (0 until size).fold(Complex()) { acc, i -> acc + this[i,i] }
@@ -99,6 +96,7 @@ class SqComplexMatrix : ComplexMatrix {
         return true
     }
 
+    override fun copy() = SqComplexMatrix(super.copy())
     operator fun times(other: SqComplexMatrix) = SqComplexMatrix(super.times(other))
     override operator fun times(scalar:Double) = SqComplexMatrix(super.times(scalar))
     operator fun plus(other: SqComplexMatrix) = SqComplexMatrix(super.plus(other))

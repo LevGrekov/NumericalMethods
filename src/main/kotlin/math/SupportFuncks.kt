@@ -9,11 +9,6 @@ fun Double.neq(other: Double, eps: Double) = !this.eq(other, eps)
 infix fun Double.eq(other: Double) = abs(this - other) < max(ulp, other.ulp) * 10.0
 infix fun Double.neq(other: Double) = !this.eq(other)
 
-
-
-
-
-
 fun factorial(n: Int): Int {
     var result = 1
     for (i in 1..n) {
