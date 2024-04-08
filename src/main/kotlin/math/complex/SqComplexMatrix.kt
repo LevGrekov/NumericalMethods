@@ -1,6 +1,6 @@
 package math.complex
-
 import math.abs
+import kotlin.math.sqrt
 
 class SqComplexMatrix : ComplexMatrix {
     val determinant: Complex by lazy { determinantRecursive() }
@@ -8,6 +8,7 @@ class SqComplexMatrix : ComplexMatrix {
     override val T by lazy { SqComplexMatrix(super.T) }
     override val H by lazy { SqComplexMatrix(super.H) }
     val E by lazy { identity(size) }
+    val EigenValues by lazy{QRMethod(this, ArrayList())}
     val size: Int
         get() = rows
     constructor(data: Array<Array<Complex>>) : super(data) {
@@ -70,6 +71,12 @@ class SqComplexMatrix : ComplexMatrix {
         return maxSum
     }
 
+    fun norm2(): Double {
+        val maxEigenValue = (this.H * this).EigenValues.maxByOrNull { it.abs() }
+            ?: throw IllegalStateException("Матрица A^*A не имеет собственных значений")
+        return sqrt(maxEigenValue.abs())
+    }
+
     fun isSymmetric(): Boolean {
         val n = size
         for (i in 0 until n) {
@@ -96,8 +103,10 @@ class SqComplexMatrix : ComplexMatrix {
         return true
     }
 
+
     override fun copy() = SqComplexMatrix(super.copy())
     operator fun times(other: SqComplexMatrix) = SqComplexMatrix(super.times(other))
+    override operator fun times(scalar: Complex) =  SqComplexMatrix(super.times(scalar))
     override operator fun times(scalar:Double) = SqComplexMatrix(super.times(scalar))
     operator fun plus(other: SqComplexMatrix) = SqComplexMatrix(super.plus(other))
     operator fun minus(other: SqComplexMatrix) = SqComplexMatrix(super.minus(other))

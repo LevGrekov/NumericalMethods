@@ -46,7 +46,6 @@ class Complex(var re: Double = 0.0, var im: Double = 0.0)  {
     }
 
     override fun toString() = buildString {
-        append("(")
         if ((re != 0.0) || (im == 0.0)) append("%.10f".format(re))
         if(im != 0.0) {
             append(if(im < 0.0) "-" else if(re != 0.0) "+" else "")
@@ -54,7 +53,6 @@ class Complex(var re: Double = 0.0, var im: Double = 0.0)  {
             append(formattedIm)
             append("i")
         }
-        append(")")
     }
     private fun conj() = Complex(re, -im)
     fun sin(): Complex {

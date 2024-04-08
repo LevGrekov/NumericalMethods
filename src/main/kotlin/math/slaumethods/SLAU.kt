@@ -9,14 +9,6 @@ import kotlin.math.*
 class SLAU(matrix: SqComplexMatrix,constants: ComplexMatrix, var tolerance: Double = 1e-3){
 
     companion object{
-        fun complexVectorNorm(vector: ComplexMatrix): Double {
-            if(vector.cols != 1) throw Exception("В complexVectorNorm попала Строка ")
-            var sum = 0.0
-            for (i in 0 until vector.rows) {
-                sum += vector[i,0].abs2()
-            }
-            return sqrt(sum)
-        }
 
         fun transformToIterativeForm(A: SqComplexMatrix, b: ComplexMatrix,tau:Double,C:SqComplexMatrix) =
             Pair(A.E - (C * tau) * A, C*b * tau)
@@ -39,9 +31,9 @@ class SLAU(matrix: SqComplexMatrix,constants: ComplexMatrix, var tolerance: Doub
             return ComplexMatrix(matrix).T
         }
         fun findAbsError(exactX:ComplexMatrix,approximateX:ComplexMatrix ) =
-            complexVectorNorm((exactX - approximateX))
+            ((exactX - approximateX)).complexVectorNorm2()
         fun relativeError(exactX:ComplexMatrix,approximateX:ComplexMatrix) =
-            findAbsError(exactX,approximateX)/ complexVectorNorm(approximateX)
+            findAbsError(exactX,approximateX)/ approximateX.complexVectorNorm2()
 
     }
 
@@ -54,7 +46,7 @@ class SLAU(matrix: SqComplexMatrix,constants: ComplexMatrix, var tolerance: Doub
         this._constants = constants
     }
 
-    fun findResidual(xComputed:ComplexMatrix) = complexVectorNorm(_constants-_matrix * xComputed)
+    fun findResidual(xComputed:ComplexMatrix) = (_constants-_matrix * xComputed).complexVectorNorm2()
 
     fun simpleIterations(tau:Double? = null, C:SqComplexMatrix? = null) = when{
         tau == null && C == null -> simpleIterations(_matrix, _constants)
@@ -67,7 +59,7 @@ class SLAU(matrix: SqComplexMatrix,constants: ComplexMatrix, var tolerance: Doub
     private fun simpleIterations(A:SqComplexMatrix, b:ComplexMatrix): ComplexMatrix {
         var xOld = ComplexMatrix(A.size,1 )
         var xNew = A*xOld + b
-        val x1x0norm = complexVectorNorm((xNew - xOld))
+        val x1x0norm = (xNew - xOld).complexVectorNorm2()
         val q1 = A.norm()
         val qinf = A.norm(true)
         val q = min(q1,qinf)
@@ -118,28 +110,33 @@ class SLAU(matrix: SqComplexMatrix,constants: ComplexMatrix, var tolerance: Doub
         return simpleIterations(tildaB,newC)
     }
 
-    fun gradientDescent(minEigen:Double, maxEigen:Double) : ComplexMatrix{
+    fun gradientDescent() : ComplexMatrix{
         val (M,c) = when(_matrix.isSymmetric()){
             true-> _matrix to _constants
             false-> _matrix.T * _matrix to _matrix.T * _constants
         }
         val n = M.size
+        val maxEigen = M.norm2()
+        val minEigen = 1.0 / M.Inv.norm2()
 
-        var xOld = ComplexMatrix(n,1 )
+        var xOld = ComplexMatrix(n)
         var r = c - M*xOld
         var tau = (r.T * r).sum()/ (r.T * ((M * r)) ).sum()
         var xNew = xOld + r * tau.re
 
-        val scaledNorm = complexVectorNorm(r) / minEigen
+        val scaledNorm = r.complexVectorNorm2() / minEigen
         val rangeRatio = (maxEigen-minEigen)/(maxEigen+minEigen)
         val k = ceil(ln(tolerance/scaledNorm)/ln(rangeRatio)).toInt()
+        FileWriter.write("m: $minEigen")
+        FileWriter.write("M: $maxEigen")
         FileWriter.write("iterations: $k")
 
-        repeat(k-1){
+        repeat(k){
             r = c - M*xOld
             tau = (r.T * r).sum()/ (r.T * ((M * r)) ).sum()
             xNew = xOld + r * tau.re
             xOld = xNew
+
             if (it < 5 || it > k - 5) {
                 FileWriter.write("x${it + 1}:\n $xNew")
             }

@@ -1,10 +1,14 @@
 package math.complex
 
+import kotlin.math.sqrt
 import kotlin.random.Random
 
 open class ComplexMatrix(private val _data: Array<Array<Complex>>) {
     constructor(rows: Int, cols: Int) : this(Array(rows) { Array(cols) { Complex() } })
     constructor(matrix: ComplexMatrix) : this(matrix.data)
+
+    constructor(n: Int) : this(Array(n) { Array(1) { Complex() } })
+
     open val T by lazy { this.transpose() }
     open val H by lazy { this.conj() }
     operator fun get(i: Int, j: Int): Complex = _data[i][j]
@@ -33,8 +37,6 @@ open class ComplexMatrix(private val _data: Array<Array<Complex>>) {
         }
         else throw Exception("Невозможно преобразовать матрицу в массив")
     }
-
-
 
 
     fun swapRows(row1: Int, row2: Int) {
@@ -118,6 +120,16 @@ open class ComplexMatrix(private val _data: Array<Array<Complex>>) {
         return result
     }
 
+    open operator fun times(scalar: Complex): ComplexMatrix {
+        val result = ComplexMatrix(rows, cols)
+        for (i in 0 until rows) {
+            for (j in 0 until cols) {
+                result[i, j] = this[i, j] * scalar
+            }
+        }
+        return result
+    }
+
     operator fun times(other: ComplexMatrix): ComplexMatrix {
         require(cols == other.rows) { "Number of columns in the first matrix must be equal to the number of rows in the second matrix" }
         val result = ComplexMatrix(rows, other.cols)
@@ -159,5 +171,13 @@ open class ComplexMatrix(private val _data: Array<Array<Complex>>) {
         return ComplexMatrix(newData)
     }
 
-
+    //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    fun complexVectorNorm2(): Double {
+        if(cols != 1) throw Exception("В complexVectorNorm попала Строка ")
+        var sum = 0.0
+        for (i in 0 until rows) {
+            sum += this[i,0].abs2()
+        }
+        return sqrt(sum)
+    }
 }
